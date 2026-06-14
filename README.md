@@ -1,4 +1,4 @@
-# Turing Chat 🎯
+# Turing Chat
 
 > **Local-First AI Agent UI Library for React & Next.js**
 
@@ -8,16 +8,47 @@ Turing Chat is a premium, developer-first React component library designed to co
 
 ## Key Features
 
-* 🎨 **Vigilante Aesthetics** — Sleek midnight-slate interface with neon accents, dynamic pulsing radar animations, and interactive action card suggestions.
-* 🔌 **Human-In-The-Loop Tool Calling** — Collapsible console terminal nested in message bubbles to inspect arguments, execute local functions, and stream results back automatically.
-* 📊 **Multi-Model Compare Mode** — Split-screen view to stream and test completions side-by-side with independent model selectors and stream abort controllers.
-* 🎭 **Dynamic Agent Presets** — Swappable personas (Operative, Coder, Analyst) that change agent system instructions, temperatures, and layouts on the fly.
-* 🔒 **Local-First & Secure** — Runs entirely on the client or proxied through a rate-limited Next.js route, keeping data secure and private.
-* 🧠 **Persistent Memory** — IndexedDB and InMemory engines to persist and search conversation histories.
+* **Vigilante Aesthetics** — Sleek midnight-slate interface with neon accents, dynamic pulsing radar animations, and interactive action card suggestions.
+* **Human-In-The-Loop Tool Calling** — Collapsible console terminal nested in message bubbles to inspect arguments, execute local functions, and stream results back automatically.
+* **Multi-Model Compare Mode** — Split-screen view to stream and test completions side-by-side with independent model selectors and stream abort controllers.
+* **Dynamic Agent Presets** — Swappable personas (Operative, Coder, Analyst) that change agent system instructions, temperatures, and layouts on the fly.
+* **Local-First & Secure** — Runs entirely on the client or proxied through a rate-limited Next.js route, keeping data secure and private.
+* **Persistent Memory** — IndexedDB and InMemory engines to persist and search conversation histories.
 
 ---
 
 ## Monorepo Workspace Structure
+
+The project is structured as a pnpm monorepo managed by Turborepo, separating core logic, React bindings, server integrations, and playground examples:
+
+```
+turing-chat/
+├── packages/
+│   ├── core/           # Framework-agnostic AI agent engine
+│   │   └── src/
+│   │       ├── presets/    # Built-in agent presets (Turing, Coder, Analyst)
+│   │       ├── providers/  # Provider interfaces (Ollama, LM Studio)
+│   │       ├── memory/     # Memory persistence engines (IndexedDB, InMemory)
+│   │       └── tools/      # Tool registries and types
+│   ├── react/          # React hooks & themed components
+│   │   └── src/
+│   │       ├── components/ # TuringChat, MessageBubble, InputBar, StatusIndicator, ThreadList
+│   │       ├── context/    # TuringProvider context for shared state
+│   │       ├── hooks/      # useTuringAgent, useModelManager, useConversation, useMessageStream
+│   │       └── themes/     # Vigilante (Midnight Violet), Minimal, Corporate CSS theme styles
+│   └── nextjs/         # Next.js server-side route utilities
+│       └── src/
+│           ├── api/        # createTuringHandler Route Handler
+│           ├── middleware/ # validator & rateLimiter middleware
+│           └── providers/  # Ollama server-side providers
+├── examples/
+│   └── nextjs-chat/    # Next.js & React 19 Playground Chat application
+├── package.json        # Workspace package scripts
+├── pnpm-workspace.yaml # Monorepo workspace configurations
+└── turbo.json          # Monorepo build pipeline configurations
+```
+
+### Package Overview
 
 | Package | Description |
 |:---|:---|
