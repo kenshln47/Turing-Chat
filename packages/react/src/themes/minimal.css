@@ -1,0 +1,168 @@
+/* ============================================================================
+ * Turing Chat — Minimal Theme
+ * Clean, light, distraction-free design.
+ * ========================================================================== */
+
+@import './variables.css';
+
+@keyframes tac-minimal-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+[data-turing-theme="minimal"] {
+  /* ──── Color Palette ────────────────────────────────────────────────── */
+  --tur-color-bg: #ffffff;
+  --tur-color-bg-secondary: #f8f9fa;
+  --tur-color-bg-tertiary: #f0f1f3;
+  --tur-color-surface: #ffffff;
+  --tur-color-text: #1a1a1a;
+  --tur-color-text-secondary: #6b7280;
+  --tur-color-text-muted: #9ca3af;
+  --tur-color-accent: #2563eb;
+  --tur-color-accent-hover: #1d4ed8;
+  --tur-color-accent-subtle: rgba(37, 99, 235, 0.08);
+  --tur-color-border: #e5e7eb;
+  --tur-color-border-focus: #2563eb;
+  --tur-color-error: #ef4444;
+  --tur-color-success: #22c55e;
+  --tur-color-warning: #f59e0b;
+
+  /* ──── Shadows ──────────────────────────────────────────────────────── */
+  --tur-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --tur-shadow-md: 0 2px 4px rgba(0, 0, 0, 0.06);
+  --tur-shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.08);
+  --tur-shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.1);
+
+  /* ──── Component Tokens ─────────────────────────────────────────────── */
+  --tur-msg-user-bg: var(--tur-color-accent);
+  --tur-msg-user-text: #ffffff;
+  --tur-msg-assistant-bg: var(--tur-color-bg-secondary);
+  --tur-msg-assistant-text: var(--tur-color-text);
+  --tur-input-bg: var(--tur-color-surface);
+  --tur-input-border: var(--tur-color-border);
+  --tur-input-text: var(--tur-color-text);
+  --tur-input-placeholder: var(--tur-color-text-muted);
+  --tur-scrollbar-thumb: #d1d5db;
+  --tur-scrollbar-track: transparent;
+  --tur-code-bg: #f6f8fa;
+  --tur-code-text: #24292f;
+
+  color-scheme: light;
+}
+
+/* ──── Container ────────────────────────────────────────────────────────── */
+[data-turing-theme="minimal"] [data-turing="chat"] {
+  background: var(--tur-color-bg);
+}
+
+/* ──── Messages ─────────────────────────────────────────────────────────── */
+[data-turing-theme="minimal"] [data-turing="message"] {
+  animation: tac-minimal-fade-in var(--tur-transition-base) ease-out;
+}
+
+[data-turing-theme="minimal"] [data-turing="message"][data-role="user"] {
+  background: var(--tur-msg-user-bg);
+  color: var(--tur-msg-user-text);
+  border-radius: var(--tur-radius-md) var(--tur-radius-md) var(--tur-radius-sm) var(--tur-radius-md);
+}
+
+[data-turing-theme="minimal"] [data-turing="message"][data-role="assistant"] {
+  background: var(--tur-msg-assistant-bg);
+  color: var(--tur-msg-assistant-text);
+  border-radius: var(--tur-radius-md) var(--tur-radius-md) var(--tur-radius-md) var(--tur-radius-sm);
+}
+
+/* ──── Input ────────────────────────────────────────────────────────────── */
+[data-turing-theme="minimal"] [data-turing="input-bar"] {
+  background: var(--tur-input-bg);
+  border: 1px solid var(--tur-input-border);
+  transition: border-color var(--tur-transition-fast),
+              box-shadow var(--tur-transition-fast);
+}
+
+[data-turing-theme="minimal"] [data-turing="input-bar"]:focus-within {
+  border-color: var(--tur-color-accent);
+  box-shadow: 0 0 0 3px var(--tur-color-accent-subtle);
+}
+
+/* ──── Status ───────────────────────────────────────────────────────────── */
+[data-turing-theme="minimal"] [data-turing="status"][data-status="connected"] {
+  color: var(--tur-color-success);
+}
+
+[data-turing-theme="minimal"] [data-turing="status"][data-status="connecting"] {
+  color: var(--tur-color-warning);
+}
+
+[data-turing-theme="minimal"] [data-turing="status"][data-status="disconnected"],
+[data-turing-theme="minimal"] [data-turing="status"][data-status="error"] {
+  color: var(--tur-color-error);
+}
+
+/* ──── Thread List ──────────────────────────────────────────────────────── */
+[data-turing-theme="minimal"] [data-turing="thread-list"] {
+  background: var(--tur-color-bg-secondary);
+  border-right: 1px solid var(--tur-color-border);
+}
+
+[data-turing-theme="minimal"] [data-turing="thread-item"]:hover {
+  background: var(--tur-color-bg-tertiary);
+}
+
+[data-turing-theme="minimal"] [data-turing="thread-item"][data-active="true"] {
+  background: var(--tur-color-accent-subtle);
+  color: var(--tur-color-accent);
+}
+
+/* ──── Buttons ──────────────────────────────────────────────────────────── */
+[data-turing-theme="minimal"] [data-turing="send-btn"] {
+  background: var(--tur-color-accent);
+  color: #ffffff;
+  transition: background var(--tur-transition-fast);
+}
+
+[data-turing-theme="minimal"] [data-turing="send-btn"]:hover:not(:disabled) {
+  background: var(--tur-color-accent-hover);
+}
+
+[data-turing-theme="minimal"] [data-turing="send-btn"]:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+[data-turing-theme="minimal"] [data-turing="stop-btn"] {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--tur-color-error);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* ──── Code Blocks ──────────────────────────────────────────────────────── */
+[data-turing-theme="minimal"] [data-turing="code-block"] {
+  background: var(--tur-code-bg);
+  border: 1px solid var(--tur-color-border);
+  color: var(--tur-code-text);
+}
+
+/* ──── Copy Button ──────────────────────────────────────────────────────── */
+[data-turing-theme="minimal"] [data-turing="copy-btn"] {
+  opacity: 0;
+  background: var(--tur-color-surface);
+  border: 1px solid var(--tur-color-border);
+  color: var(--tur-color-text-muted);
+  transition: opacity var(--tur-transition-fast);
+}
+
+[data-turing-theme="minimal"] [data-turing="message"]:hover [data-turing="copy-btn"] {
+  opacity: 1;
+}
+
+/* ──── Scrollbar ────────────────────────────────────────────────────────── */
+[data-turing-theme="minimal"] [data-turing="message-list"]::-webkit-scrollbar {
+  width: 6px;
+}
+
+[data-turing-theme="minimal"] [data-turing="message-list"]::-webkit-scrollbar-thumb {
+  background: var(--tur-scrollbar-thumb);
+  border-radius: var(--tur-radius-full);
+}

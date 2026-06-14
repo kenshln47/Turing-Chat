@@ -1,0 +1,40 @@
+{
+  "name": "@turing-chat/nextjs",
+  "version": "0.1.0",
+  "description": "Next.js integration for Turing Chat",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist"
+  },
+  "peerDependencies": {
+    "next": "^14.0.0 || ^15.0.0"
+  },
+  "dependencies": {
+    "@turing-chat/core": "workspace:*"
+  },
+  "devDependencies": {
+    "next": "^15.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "@types/react": "^19.0.0",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.0",
+    "rimraf": "^6.0.0"
+  },
+  "sideEffects": false,
+  "license": "MIT"
+}

@@ -1,0 +1,218 @@
+/* ============================================================================
+ * Turing Chat — Corporate Theme
+ * Professional, business-ready appearance with card-based layout.
+ * ========================================================================== */
+
+@import './variables.css';
+
+@keyframes tac-corp-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+[data-turing-theme="corporate"] {
+  /* ──── Color Palette ────────────────────────────────────────────────── */
+  --tur-color-bg: #f5f5f7;
+  --tur-color-bg-secondary: #ffffff;
+  --tur-color-bg-tertiary: #eef0f4;
+  --tur-color-surface: #ffffff;
+  --tur-color-text: #1e293b;
+  --tur-color-text-secondary: #475569;
+  --tur-color-text-muted: #94a3b8;
+  --tur-color-accent: #6366f1;
+  --tur-color-accent-hover: #4f46e5;
+  --tur-color-accent-subtle: rgba(99, 102, 241, 0.08);
+  --tur-color-border: #e2e8f0;
+  --tur-color-border-focus: #6366f1;
+  --tur-color-error: #ef4444;
+  --tur-color-success: #22c55e;
+  --tur-color-warning: #f59e0b;
+
+  /* ──── Shadows ──────────────────────────────────────────────────────── */
+  --tur-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --tur-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --tur-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+  --tur-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* ──── Typography Overrides ─────────────────────────────────────────── */
+  --tur-font-sans: 'SF Pro Display', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+
+  /* ──── Component Tokens ─────────────────────────────────────────────── */
+  --tur-msg-user-bg: var(--tur-color-accent);
+  --tur-msg-user-text: #ffffff;
+  --tur-msg-assistant-bg: #ffffff;
+  --tur-msg-assistant-text: var(--tur-color-text);
+  --tur-input-bg: #ffffff;
+  --tur-input-border: var(--tur-color-border);
+  --tur-input-text: var(--tur-color-text);
+  --tur-input-placeholder: var(--tur-color-text-muted);
+  --tur-scrollbar-thumb: #cbd5e1;
+  --tur-scrollbar-track: transparent;
+  --tur-code-bg: #f8fafc;
+  --tur-code-text: #334155;
+
+  color-scheme: light;
+}
+
+/* ──── Container ────────────────────────────────────────────────────────── */
+[data-turing-theme="corporate"] [data-turing="chat"] {
+  background: var(--tur-color-bg);
+}
+
+/* ──── Messages (Card Style) ────────────────────────────────────────────── */
+[data-turing-theme="corporate"] [data-turing="message"] {
+  animation: tac-corp-fade-in var(--tur-transition-base) ease-out;
+  border-radius: var(--tur-radius-md);
+}
+
+[data-turing-theme="corporate"] [data-turing="message"][data-role="user"] {
+  background: var(--tur-msg-user-bg);
+  color: var(--tur-msg-user-text);
+  box-shadow: var(--tur-shadow-sm);
+  border-radius: var(--tur-radius-md) var(--tur-radius-md) var(--tur-radius-sm) var(--tur-radius-md);
+}
+
+[data-turing-theme="corporate"] [data-turing="message"][data-role="assistant"] {
+  background: var(--tur-msg-assistant-bg);
+  color: var(--tur-msg-assistant-text);
+  box-shadow: var(--tur-shadow-md);
+  border: 1px solid var(--tur-color-border);
+  border-radius: var(--tur-radius-md) var(--tur-radius-md) var(--tur-radius-md) var(--tur-radius-sm);
+}
+
+/* ──── Input ────────────────────────────────────────────────────────────── */
+[data-turing-theme="corporate"] [data-turing="input-bar"] {
+  background: var(--tur-input-bg);
+  border: 1px solid var(--tur-input-border);
+  box-shadow: var(--tur-shadow-sm);
+  transition: border-color var(--tur-transition-fast),
+              box-shadow var(--tur-transition-fast);
+}
+
+[data-turing-theme="corporate"] [data-turing="input-bar"]:focus-within {
+  border-color: var(--tur-color-accent);
+  box-shadow: var(--tur-shadow-md), 0 0 0 3px var(--tur-color-accent-subtle);
+}
+
+/* ──── Status ───────────────────────────────────────────────────────────── */
+[data-turing-theme="corporate"] [data-turing="status"][data-status="connected"] {
+  color: var(--tur-color-success);
+}
+
+[data-turing-theme="corporate"] [data-turing="status"][data-status="connecting"] {
+  color: var(--tur-color-warning);
+}
+
+[data-turing-theme="corporate"] [data-turing="status"][data-status="disconnected"],
+[data-turing-theme="corporate"] [data-turing="status"][data-status="error"] {
+  color: var(--tur-color-error);
+}
+
+/* ──── Thread List ──────────────────────────────────────────────────────── */
+[data-turing-theme="corporate"] [data-turing="thread-list"] {
+  background: var(--tur-color-bg-secondary);
+  border-right: 1px solid var(--tur-color-border);
+}
+
+[data-turing-theme="corporate"] [data-turing="thread-item"] {
+  border-radius: var(--tur-radius-sm);
+  margin: var(--tur-space-xs) var(--tur-space-sm);
+  transition: background var(--tur-transition-fast);
+}
+
+[data-turing-theme="corporate"] [data-turing="thread-item"]:hover {
+  background: var(--tur-color-bg-tertiary);
+}
+
+[data-turing-theme="corporate"] [data-turing="thread-item"][data-active="true"] {
+  background: var(--tur-color-accent-subtle);
+  border-left: 3px solid var(--tur-color-accent);
+}
+
+/* ──── Buttons ──────────────────────────────────────────────────────────── */
+[data-turing-theme="corporate"] [data-turing="send-btn"] {
+  background: var(--tur-color-accent);
+  color: #ffffff;
+  border-radius: var(--tur-radius-sm);
+  box-shadow: var(--tur-shadow-sm);
+  transition: all var(--tur-transition-fast);
+}
+
+[data-turing-theme="corporate"] [data-turing="send-btn"]:hover:not(:disabled) {
+  background: var(--tur-color-accent-hover);
+  box-shadow: var(--tur-shadow-md);
+}
+
+[data-turing-theme="corporate"] [data-turing="send-btn"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+[data-turing-theme="corporate"] [data-turing="stop-btn"] {
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--tur-color-error);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--tur-radius-sm);
+}
+
+/* ──── Code Blocks ──────────────────────────────────────────────────────── */
+[data-turing-theme="corporate"] [data-turing="code-block"] {
+  background: var(--tur-code-bg);
+  border: 1px solid var(--tur-color-border);
+  color: var(--tur-code-text);
+  border-radius: var(--tur-radius-sm);
+  box-shadow: var(--tur-shadow-sm);
+}
+
+[data-turing-theme="corporate"] [data-turing="code-block"] .tac-code-header {
+  background: var(--tur-color-bg-tertiary);
+  border-bottom: 1px solid var(--tur-color-border);
+  color: var(--tur-color-text-secondary);
+  font-weight: var(--tur-font-weight-medium);
+}
+
+/* ──── Model Selector ───────────────────────────────────────────────────── */
+[data-turing-theme="corporate"] [data-turing="model-selector"] select {
+  background: var(--tur-color-surface);
+  border: 1px solid var(--tur-color-border);
+  border-radius: var(--tur-radius-sm);
+  color: var(--tur-color-text);
+  box-shadow: var(--tur-shadow-sm);
+}
+
+[data-turing-theme="corporate"] [data-turing="model-selector"] select:focus {
+  border-color: var(--tur-color-accent);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--tur-color-accent-subtle);
+}
+
+/* ──── Copy Button ──────────────────────────────────────────────────────── */
+[data-turing-theme="corporate"] [data-turing="copy-btn"] {
+  opacity: 0;
+  background: var(--tur-color-surface);
+  border: 1px solid var(--tur-color-border);
+  color: var(--tur-color-text-muted);
+  border-radius: var(--tur-radius-sm);
+  box-shadow: var(--tur-shadow-sm);
+  transition: opacity var(--tur-transition-fast);
+}
+
+[data-turing-theme="corporate"] [data-turing="message"]:hover [data-turing="copy-btn"] {
+  opacity: 1;
+}
+
+[data-turing-theme="corporate"] [data-turing="copy-btn"]:hover {
+  color: var(--tur-color-accent);
+  border-color: var(--tur-color-accent);
+}
+
+/* ──── Scrollbar ────────────────────────────────────────────────────────── */
+[data-turing-theme="corporate"] [data-turing="message-list"]::-webkit-scrollbar {
+  width: 6px;
+}
+
+[data-turing-theme="corporate"] [data-turing="message-list"]::-webkit-scrollbar-thumb {
+  background: var(--tur-scrollbar-thumb);
+  border-radius: var(--tur-radius-full);
+}

@@ -1,0 +1,428 @@
+/* ============================================================================
+ * Turing Chat — Vigilante Theme
+ * Dark turing/hacker aesthetic with neon accent and glassmorphism.
+ * ========================================================================== */
+
+@import './variables.css';
+
+/* ──── Noise Background Texture ─────────────────────────────────────────── */
+@keyframes tac-noise {
+  0%, 100% { background-position: 0 0; }
+  10% { background-position: -5% -10%; }
+  30% { background-position: 3% -15%; }
+  50% { background-position: 12% 9%; }
+  70% { background-position: 9% 4%; }
+  90% { background-position: -1% 7%; }
+}
+
+@keyframes tac-pulse-glow {
+  0%, 100% { opacity: 1; box-shadow: 0 0 4px currentColor; }
+  50% { opacity: 0.6; box-shadow: 0 0 8px currentColor, 0 0 16px currentColor; }
+}
+
+@keyframes tac-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tac-cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes tac-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes tac-status-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.5;
+  }
+}
+
+[data-turing-theme="vigilante"] {
+  /* ──── Color Palette ────────────────────────────────────────────────── */
+  --tur-color-bg: #0a0a0f;
+  --tur-color-bg-secondary: #12121a;
+  --tur-color-bg-tertiary: #1a1a28;
+  --tur-color-surface: #0e0e16;
+  --tur-color-text: #e0e0e0;
+  --tur-color-text-secondary: #8b8fa3;
+  --tur-color-text-muted: #6b7280;
+  --tur-color-accent: #8b5cf6;
+  --tur-color-accent-hover: #7c3aed;
+  --tur-color-accent-subtle: rgba(139, 92, 246, 0.08);
+  --tur-color-border: #1e1e2e;
+  --tur-color-border-focus: #8b5cf6;
+  --tur-color-error: #ff4757;
+  --tur-color-success: #8b5cf6;
+  --tur-color-warning: #ffa502;
+
+  /* ──── Shadows & Glows ──────────────────────────────────────────────── */
+  --tur-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --tur-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --tur-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+  --tur-shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.7);
+  --tur-glow-accent: 0 0 20px rgba(139, 92, 246, 0.15);
+  --tur-glow-accent-strong: 0 0 30px rgba(139, 92, 246, 0.3), 0 0 60px rgba(139, 92, 246, 0.1);
+
+  /* ──── Component Tokens ─────────────────────────────────────────────── */
+  --tur-msg-user-bg: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(139, 92, 246, 0.08) 100%);
+  --tur-msg-user-text: #e0e0e0;
+  --tur-msg-assistant-bg: rgba(255, 255, 255, 0.03);
+  --tur-msg-assistant-text: #e0e0e0;
+  --tur-input-bg: #0e0e16;
+  --tur-input-border: #1e1e2e;
+  --tur-input-text: #e0e0e0;
+  --tur-input-placeholder: #4a4a5a;
+  --tur-scrollbar-thumb: #2a2a3a;
+  --tur-scrollbar-track: transparent;
+  --tur-code-bg: #0d0d15;
+  --tur-code-text: #8b5cf6;
+
+  color-scheme: dark;
+}
+
+/* ──── Global Container ─────────────────────────────────────────────────── */
+[data-turing-theme="vigilante"] [data-turing="chat"] {
+  background: var(--tur-color-bg);
+  position: relative;
+}
+
+[data-turing-theme="vigilante"] [data-turing="chat"]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 128px 128px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ──── Message Bubbles ──────────────────────────────────────────────────── */
+[data-turing-theme="vigilante"] [data-turing="message"] {
+  animation: tac-slide-up var(--tur-transition-base) ease-out;
+}
+
+[data-turing-theme="vigilante"] [data-turing="message"][data-role="user"] {
+  background: var(--tur-msg-user-bg);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  box-shadow: var(--tur-glow-accent);
+}
+
+[data-turing-theme="vigilante"] [data-turing="message"][data-role="assistant"] {
+  background: var(--tur-msg-assistant-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ──── Streaming Cursor ─────────────────────────────────────────────────── */
+[data-turing-theme="vigilante"] [data-turing="cursor"] {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  background: var(--tur-color-accent);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: tac-cursor-blink 0.8s ease-in-out infinite;
+  box-shadow: 0 0 4px var(--tur-color-accent);
+}
+
+/* ──── Input Bar ────────────────────────────────────────────────────────── */
+[data-turing-theme="vigilante"] [data-turing="input-bar"] {
+  background: var(--tur-input-bg);
+  border: 1px solid var(--tur-input-border);
+  transition: border-color var(--tur-transition-fast),
+              box-shadow var(--tur-transition-fast);
+}
+
+[data-turing-theme="vigilante"] [data-turing="input-bar"]:focus-within {
+  border-color: var(--tur-color-accent);
+  box-shadow: var(--tur-glow-accent), inset 0 0 20px rgba(0, 255, 136, 0.03);
+}
+
+/* ──── Status Indicator ─────────────────────────────────────────────────── */
+[data-turing-theme="vigilante"] [data-turing="status"][data-status="connected"] {
+  color: var(--tur-color-success);
+  animation: tac-status-pulse 2s ease-in-out infinite;
+}
+
+[data-turing-theme="vigilante"] [data-turing="status"][data-status="connecting"] {
+  color: var(--tur-color-warning);
+  animation: tac-status-pulse 1s ease-in-out infinite;
+}
+
+[data-turing-theme="vigilante"] [data-turing="status"][data-status="disconnected"],
+[data-turing-theme="vigilante"] [data-turing="status"][data-status="error"] {
+  color: var(--tur-color-error);
+}
+
+/* ──── Thread List ──────────────────────────────────────────────────────── */
+[data-turing-theme="vigilante"] [data-turing="thread-list"] {
+  background: var(--tur-color-bg-secondary);
+  border-right: 1px solid var(--tur-color-border);
+}
+
+[data-turing-theme="vigilante"] [data-turing="thread-item"]:hover {
+  background: rgba(139, 92, 246, 0.05);
+}
+
+[data-turing-theme="vigilante"] [data-turing="thread-item"][data-active="true"] {
+  background: rgba(139, 92, 246, 0.1);
+  border-left: 2px solid var(--tur-color-accent);
+}
+
+/* ──── Model Selector ───────────────────────────────────────────────────── */
+[data-turing-theme="vigilante"] [data-turing="model-selector"] select {
+  background: var(--tur-color-bg-secondary);
+  border: 1px solid var(--tur-color-border);
+  color: var(--tur-color-text);
+}
+
+[data-turing-theme="vigilante"] [data-turing="model-selector"] select:focus {
+  border-color: var(--tur-color-accent);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+}
+
+/* ──── Code Blocks ──────────────────────────────────────────────────────── */
+[data-turing-theme="vigilante"] [data-turing="code-block"] {
+  background: var(--tur-code-bg);
+  border: 1px solid var(--tur-color-border);
+  color: var(--tur-code-text);
+}
+
+[data-turing-theme="vigilante"] [data-turing="code-block"] .tac-code-header {
+  background: rgba(139, 92, 246, 0.05);
+  border-bottom: 1px solid var(--tur-color-border);
+  color: var(--tur-color-text-muted);
+}
+
+/* ──── Scrollbar ────────────────────────────────────────────────────────── */
+[data-turing-theme="vigilante"] [data-turing="message-list"]::-webkit-scrollbar {
+  width: 6px;
+}
+
+[data-turing-theme="vigilante"] [data-turing="message-list"]::-webkit-scrollbar-track {
+  background: var(--tur-scrollbar-track);
+}
+
+[data-turing-theme="vigilante"] [data-turing="message-list"]::-webkit-scrollbar-thumb {
+  background: var(--tur-scrollbar-thumb);
+  border-radius: var(--tur-radius-full);
+}
+
+[data-turing-theme="vigilante"] [data-turing="message-list"]::-webkit-scrollbar-thumb:hover {
+  background: #3a3a4a;
+}
+
+/* ──── Buttons ──────────────────────────────────────────────────────────── */
+[data-turing-theme="vigilante"] [data-turing="send-btn"] {
+  background: var(--tur-color-accent);
+  color: #0a0a0f;
+  transition: all var(--tur-transition-fast);
+}
+
+[data-turing-theme="vigilante"] [data-turing="send-btn"]:hover:not(:disabled) {
+  background: var(--tur-color-accent-hover);
+  box-shadow: var(--tur-glow-accent);
+}
+
+[data-turing-theme="vigilante"] [data-turing="send-btn"]:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+[data-turing-theme="vigilante"] [data-turing="stop-btn"] {
+  background: rgba(255, 71, 87, 0.15);
+  color: var(--tur-color-error);
+  border: 1px solid rgba(255, 71, 87, 0.3);
+  transition: all var(--tur-transition-fast);
+}
+
+[data-turing-theme="vigilante"] [data-turing="stop-btn"]:hover {
+  background: rgba(255, 71, 87, 0.25);
+}
+
+/* ──── Copy Button ──────────────────────────────────────────────────────── */
+[data-turing-theme="vigilante"] [data-turing="copy-btn"] {
+  opacity: 0;
+  background: var(--tur-color-bg-tertiary);
+  border: 1px solid var(--tur-color-border);
+  color: var(--tur-color-text-muted);
+  transition: opacity var(--tur-transition-fast);
+}
+
+[data-turing-theme="vigilante"] [data-turing="message"]:hover [data-turing="copy-btn"] {
+  opacity: 1;
+}
+
+[data-turing-theme="vigilante"] [data-turing="copy-btn"]:hover {
+  color: var(--tur-color-accent);
+  border-color: var(--tur-color-accent);
+}
+
+
+/* ──── Custom Styled Select ─────────────────────────────────────────────── */
+[data-turing-theme="vigilante"] select.tac-custom-select {
+  background: var(--tur-color-bg-secondary);
+  border: 1px solid var(--tur-color-border);
+  color: var(--tur-color-text-secondary);
+  padding: 6px 28px 6px 12px;
+  border-radius: var(--tur-radius-sm);
+  font-family: var(--tur-font-mono);
+  font-size: 11px;
+  appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b8fa3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  transition: border-color var(--tur-transition-fast), color var(--tur-transition-fast), box-shadow var(--tur-transition-fast);
+}
+[data-turing-theme="vigilante"] select.tac-custom-select:hover {
+  border-color: var(--tur-color-accent);
+  color: var(--tur-color-text);
+}
+
+/* ──── Pulse animation ──────────────────────────────────────────────────── */
+@keyframes radar-pulse {
+  0% { transform: scale(0.9); opacity: 0.2; }
+  50% { opacity: 0.4; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+[data-turing-theme="vigilante"] .tac-radar-ring {
+  position: absolute;
+  border: 1.5px solid var(--tur-color-accent);
+  border-radius: 50%;
+  animation: radar-pulse 3s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+[data-turing-theme="vigilante"] .tac-radar-ring:nth-child(2) {
+  animation-delay: 1s;
+}
+[data-turing-theme="vigilante"] .tac-radar-ring:nth-child(3) {
+  animation-delay: 2s;
+}
+
+/* ──── Suggestions Grid ─────────────────────────────────────────────────── */
+[data-turing-theme="vigilante"] .tac-suggestions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  width: 100%;
+  max-width: 500px;
+  margin-top: var(--tur-space-xl);
+}
+
+[data-turing-theme="vigilante"] .tac-suggestion-card {
+  background: rgba(17, 24, 39, 0.4);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--tur-color-border);
+  border-radius: var(--tur-radius-md);
+  padding: var(--tur-space-md);
+  text-align: left;
+  cursor: pointer;
+  transition: all var(--tur-transition-base);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+[data-turing-theme="vigilante"] .tac-suggestion-card:hover {
+  background: rgba(139, 92, 246, 0.02);
+  border-color: var(--tur-color-accent);
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.08);
+  transform: translateY(-2px);
+}
+
+[data-turing-theme="vigilante"] .tac-suggestion-icon {
+  font-size: 1.25rem;
+  margin-bottom: 2px;
+}
+
+[data-turing-theme="vigilante"] .tac-suggestion-title {
+  font-family: var(--tur-font-mono);
+  font-size: var(--tur-font-size-sm);
+  font-weight: 600;
+  color: var(--tur-color-text);
+}
+
+[data-turing-theme="vigilante"] .tac-suggestion-desc {
+  font-size: var(--tur-font-size-xs);
+  color: var(--tur-color-text-secondary);
+  line-height: 1.4;
+}
+
+/* ──── Input Console Badges ─────────────────────────────────────────────── */
+[data-turing-theme="vigilante"] .tac-input-badge {
+  font-family: var(--tur-font-mono);
+  font-size: 10px;
+  color: var(--tur-color-text-muted);
+  background: var(--tur-color-bg-secondary);
+  border: 1px solid var(--tur-color-border);
+  padding: 2px 6px;
+  border-radius: 4px;
+  user-select: none;
+  font-weight: 500;
+}
+
+/* ──── Assistant bubble left border override ───────────────────────────── */
+[data-turing-theme="vigilante"] [data-turing="message"][data-role="assistant"] > div[role="article"] {
+  border-left: 2px solid var(--tur-color-accent) !important;
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+
+/* ──── Soft scroll dynamic shadow ───────────────────────────────────────── */
+[data-turing-theme="vigilante"] [data-turing="chat"] {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* ──── Turing Preset Selector & Compare styles ───────────────────────── */
+[data-turing-theme="vigilante"] select.tac-preset-select {
+  transition: border-color var(--tur-transition-fast), color var(--tur-transition-fast);
+}
+
+[data-turing-theme="vigilante"] select.tac-preset-select:hover {
+  border-color: var(--tur-color-accent);
+  color: var(--tur-color-text);
+}
+
+/* ──── Tool Console Terminal Styles ─────────────────────────────────────── */
+[data-turing-theme="vigilante"] .tac-terminal-console {
+  transition: all var(--tur-transition-base);
+}
+
+[data-turing-theme="vigilante"] .tac-btn-approve:hover {
+  opacity: 0.9;
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.4);
+}
+
+[data-turing-theme="vigilante"] .tac-btn-decline:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--tur-color-text) !important;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.tac-console-spinner {
+  animation: spin 1s linear infinite;
+}
