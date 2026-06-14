@@ -119,7 +119,7 @@ const customTools: Record<string, ExecutableTool> = {
 
 ## Architecture Guide & Diagrams
 
-For an in-depth breakdown of package relationships, stream processing loops, and sequence diagrams for tool execution, please refer to the [System Architecture Guide](./C:/Users/Administrator/.gemini/antigravity/brain/9d4866e3-2907-4b27-8937-d208209e61a9/architecture_guide.md).
+For an in-depth breakdown of package relationships, stream processing loops, and sequence diagrams for tool execution, please refer to the [System Architecture Guide](./architecture_guide.md).
 
 ## License
 
