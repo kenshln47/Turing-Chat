@@ -99,8 +99,14 @@
  * blacks every other dark interface uses, so the identity survives the switch.
  */
 
+/* The second `:not()` matters: components render their own
+   `data-turing-theme` root, so a page can contain nested theme roots. Only the
+   outermost carries the pinned scheme, and without excluding its descendants
+   an inner root would re-apply dark tokens over a page pinned to light. */
 @media (prefers-color-scheme: dark) {
-  [data-turing-theme='instrument']:not([data-turing-scheme='light']) {
+  [data-turing-theme='instrument']:not([data-turing-scheme='light']):not(
+      [data-turing-scheme='light'] *
+    ) {
     color-scheme: dark;
 
     --tur-color-bg: #15130e;
@@ -157,9 +163,11 @@
   }
 }
 
-/* Explicit dark, ignoring the system preference. Duplicated rather than
-   shared because CSS cannot union a media query with an attribute selector. */
-[data-turing-theme='instrument'][data-turing-scheme='dark'] {
+/* Explicit dark, ignoring the system preference. Duplicated rather than shared
+   because CSS cannot union a media query with an attribute selector.
+   The descendant form covers nested theme roots inside a pinned page. */
+[data-turing-theme='instrument'][data-turing-scheme='dark'],
+[data-turing-scheme='dark'] [data-turing-theme='instrument'] {
   color-scheme: dark;
 
   --tur-color-bg: #15130e;
