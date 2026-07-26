@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { TuringChat, type ExecutableTool } from "@turing-chat/react";
 import { mockProvider, ollamaProvider } from "@turing-chat/core";
+import { OllamaNotice, useOllamaStatus } from "../ollama-status";
 
 /**
  * Tools the assistant may call, executed here in the browser.
@@ -79,12 +80,29 @@ const playgroundTools: Record<string, ExecutableTool> = {
 };
 
 export default function ChatPage() {
-  const [useMock, setUseMock] = useState(true);
+  const { status, models } = useOllamaStatus();
+  const [useMock, setUseMock] = useState(false);
+
+  // Simulated models are the fallback, not the default — see arena/page.tsx.
+  const [touched, setTouched] = useState(false);
+  useEffect(() => {
+    if (!touched && (status === "unreachable" || status === "blocked")) {
+      setUseMock(true);
+    }
+  }, [status, touched]);
+
+  function choose(next: boolean) {
+    setTouched(true);
+    setUseMock(next);
+  }
 
   const provider = useMemo(
     () => (useMock ? mockProvider() : ollamaProvider()),
     [useMock],
   );
+
+  // Prefer a model the visitor actually has over a hardcoded guess.
+  const realModel = models[0] ?? "llama3.2";
 
   return (
     <main className="wrap demo">
@@ -101,16 +119,23 @@ export default function ChatPage() {
           <input
             type="checkbox"
             checked={useMock}
-            onChange={(e) => setUseMock(e.target.checked)}
+            onChange={(e) => choose(e.target.checked)}
           />
           Simulated models
         </label>
       </div>
 
+      <OllamaNotice
+        status={status}
+        models={models}
+        usingMock={useMock}
+        onUseMock={choose}
+      />
+
       <TuringChat
-        key={useMock ? "mock" : "ollama"}
+        key={useMock ? "mock" : `ollama-${realModel}`}
         provider={provider}
-        model={useMock ? "mock-sage:14b" : "llama3.2"}
+        model={useMock ? "mock-sage:14b" : realModel}
         compareModel={useMock ? "mock-swift:3b" : undefined}
         tools={playgroundTools}
         showThreadList

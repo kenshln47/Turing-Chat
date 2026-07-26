@@ -435,6 +435,106 @@ a {
   cursor: pointer;
 }
 
+/* ──── Connection notice ────────────────────────────────────────────────── */
+
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  border: 1px solid var(--tur-color-border);
+  border-radius: var(--tur-radius-sm);
+  background: var(--tur-color-surface);
+  font-size: var(--tur-font-size-sm);
+  color: var(--tur-color-text-secondary);
+  line-height: 1.6;
+}
+
+.notice--ok {
+  border-color: color-mix(in srgb, var(--tur-color-success) 40%, transparent);
+  background: var(--tur-color-success-subtle);
+}
+
+.notice--warn {
+  border-color: color-mix(in srgb, var(--tur-color-warning) 40%, transparent);
+  background: var(--tur-color-warning-subtle);
+}
+
+.notice strong {
+  color: var(--tur-color-text);
+  font-weight: 600;
+}
+
+.notice p {
+  margin: 6px 0;
+}
+
+.notice code {
+  font-family: var(--tur-font-mono);
+  font-size: 0.92em;
+  background: var(--tur-code-bg);
+  border: 1px solid var(--tur-color-border);
+  border-radius: var(--tur-radius-xs);
+  padding: 1px 5px;
+}
+
+.notice__cmd {
+  margin: 8px 0;
+  padding: 10px 12px;
+  background: var(--tur-code-bg);
+  border: 1px solid var(--tur-color-border);
+  border-radius: var(--tur-radius-xs);
+  overflow-x: auto;
+}
+
+.notice__cmd code {
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.notice__hint {
+  color: var(--tur-color-text-muted);
+  font-size: var(--tur-font-size-xs);
+}
+
+/* A status lamp, the way an instrument reports its own state. */
+.notice__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 7px;
+}
+
+.notice__dot--ok {
+  background: var(--tur-color-success);
+}
+
+.notice__dot--warn {
+  background: var(--tur-color-warning);
+}
+
+.notice__dot--idle {
+  background: var(--tur-color-text-muted);
+  animation: tur-breathe 1.5s ease-in-out infinite;
+}
+
+.linkish {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--tur-color-accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.linkish:hover {
+  color: var(--tur-color-accent-hover);
+}
+
 /* ──── Footer ───────────────────────────────────────────────────────────── */
 
 .site-footer {
