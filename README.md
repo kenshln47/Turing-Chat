@@ -2,9 +2,13 @@
 
 > **Find out which of your local models is actually best — with your prompts, on your hardware.**
 
+[![Live demo](https://img.shields.io/badge/demo-turing--chat--gold.vercel.app-BF3B12.svg)](https://turing-chat-gold.vercel.app)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Tests](https://img.shields.io/badge/tests-229%20passing-brightgreen.svg)](#development)
 [![Status](https://img.shields.io/badge/status-alpha-orange.svg)](#project-status)
+
+**→ [Try the live demo](https://turing-chat-gold.vercel.app/arena)** — runs on simulated models,
+nothing to install.
 
 You have eight models pulled in Ollama. Which one should you use for code? Which is fastest on
 your GPU? Public benchmarks can't tell you — they didn't test your prompts or your machine.
@@ -41,7 +45,10 @@ It ships a complete chat UI too — the arena is built on it.
 
 ## Project status
 
-**Alpha, and not yet on npm.** The API still moves between versions. Use it from source:
+**Alpha, and not yet on npm.** The API still moves between versions.
+
+The [live demo](https://turing-chat-gold.vercel.app) deploys from `main` on every push. To run it
+locally:
 
 ```bash
 git clone https://github.com/kenshln47/Turing-Chat.git
