@@ -110,10 +110,44 @@ export interface ChatChunk {
   model?: string;
   /** Total wall-clock duration in nanoseconds (Ollama). */
   totalDuration?: number;
+  /** Generation-only duration in nanoseconds, excluding prompt evaluation (Ollama). */
+  evalDuration?: number;
   /** Number of prompt tokens evaluated. */
   promptTokens?: number;
   /** Number of completion tokens generated. */
   completionTokens?: number;
+}
+
+// ---------------------------------------------------------------------------
+// Run Metrics
+// ---------------------------------------------------------------------------
+
+/**
+ * Performance measurements for a single completion.
+ *
+ * Timing fields are measured client-side (wall clock) so they are comparable
+ * across providers, while token counts come from the provider when it reports
+ * them. `tokensPerSecond` is derived from `completionTokens` and the generation
+ * window (total time minus the wait for the first token), which is the figure
+ * that actually reflects decode throughput.
+ */
+export interface RunMetrics {
+  /** Milliseconds from request start to the first token arriving. */
+  ttftMs?: number;
+  /** Total wall-clock milliseconds from request start to completion. */
+  totalMs: number;
+  /** Prompt tokens consumed, when the provider reports them. */
+  promptTokens?: number;
+  /** Completion tokens generated, when the provider reports them. */
+  completionTokens?: number;
+  /** Decode throughput in tokens per second. */
+  tokensPerSecond?: number;
+  /** Characters emitted — a provider-independent fallback measure. */
+  charCount: number;
+  /** Whether the run was cancelled before finishing. */
+  aborted?: boolean;
+  /** Error message when the run failed. */
+  error?: string;
 }
 
 // ---------------------------------------------------------------------------

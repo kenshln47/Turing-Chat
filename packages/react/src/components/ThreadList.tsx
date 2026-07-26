@@ -116,10 +116,10 @@ function MenuIcon() {
 // Styles
 // ────────────────────────────────────────────────────────────────────────────
 
+// Display and width are set in CSS, not here, so a stylesheet media query can
+// collapse the sidebar on narrow screens. An inline `display` would win over
+// any rule the theme tried to apply.
 const sidebarStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  width: 'var(--tur-sidebar-width, 280px)',
   height: '100%',
   overflowY: 'auto',
   fontFamily: 'var(--tur-font-sans)',

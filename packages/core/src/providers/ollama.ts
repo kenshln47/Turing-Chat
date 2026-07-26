@@ -41,6 +41,7 @@ interface OllamaChatStreamChunk {
   message?: { role?: string; content?: string; tool_calls?: OllamaToolCall[] };
   done?: boolean;
   total_duration?: number;
+  eval_duration?: number;
   prompt_eval_count?: number;
   eval_count?: number;
 }
@@ -205,6 +206,7 @@ export function ollamaProvider(config: OllamaProviderConfig = {}): TuringProvide
           type: 'done',
           model: chunk.model,
           totalDuration: chunk.total_duration,
+          evalDuration: chunk.eval_duration,
           promptTokens: chunk.prompt_eval_count,
           completionTokens: chunk.eval_count,
         };

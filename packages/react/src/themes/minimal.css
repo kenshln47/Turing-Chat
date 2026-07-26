@@ -48,6 +48,25 @@
   --tur-code-bg: #f6f8fa;
   --tur-code-text: #24292f;
 
+  /* ──── Elevation & interaction ──────────────────────────────────────── */
+  --tur-color-surface-raised: #f7f8fa;
+  --tur-color-surface-hover: rgba(0, 0, 0, 0.04);
+  --tur-color-border-strong: #d4d4d8;
+  --tur-color-accent-text: #ffffff;
+  --tur-code-header-bg: #f4f4f5;
+
+  /* ──── Semantic status ──────────────────────────────────────────────── */
+  --tur-color-success: #16a34a;
+  --tur-color-success-subtle: rgba(22, 163, 74, 0.1);
+  --tur-color-warning: #d97706;
+  --tur-color-warning-subtle: rgba(217, 119, 6, 0.1);
+  --tur-color-error: #dc2626;
+  --tur-color-error-subtle: rgba(220, 38, 38, 0.08);
+  --tur-color-info: #0284c7;
+  --tur-color-info-subtle: rgba(2, 132, 199, 0.1);
+  --tur-color-neutral: #71717a;
+  --tur-color-neutral-subtle: rgba(113, 113, 122, 0.1);
+
   color-scheme: light;
 }
 

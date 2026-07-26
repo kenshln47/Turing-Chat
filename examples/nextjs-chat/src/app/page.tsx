@@ -1,103 +1,167 @@
-"use client";
-
-import { TuringChat, type ExecutableTool } from "@turing-chat/react";
-
-const playgroundTools: Record<string, ExecutableTool> = {
-  calculator: {
-    name: 'calculator',
-    description: 'Perform basic arithmetic calculations (add, subtract, multiply, divide).',
-    parameters: {
-      type: 'object',
-      properties: {
-        operation: {
-          type: 'string',
-          enum: ['add', 'subtract', 'multiply', 'divide'],
-          description: 'The math operation to perform.'
-        },
-        a: { type: 'number', description: 'The first number operand.' },
-        b: { type: 'number', description: 'The second number operand.' }
-      },
-      required: ['operation', 'a', 'b']
-    },
-    execute: async (args: Record<string, any>) => {
-      const { operation, a, b } = args;
-      // Simulate a small network / computation delay so the spinner renders
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      switch (operation) {
-        case 'add':
-          return a + b;
-        case 'subtract':
-          return a - b;
-        case 'multiply':
-          return a * b;
-        case 'divide':
-          if (b === 0) return 'Error: Division by zero';
-          return a / b;
-        default:
-          return 'Error: Unknown operation';
-      }
-    }
-  },
-  get_weather: {
-    name: 'get_weather',
-    description: 'Retrieve current meteorological weather conditions for a given city.',
-    parameters: {
-      type: 'object',
-      properties: {
-        location: { type: 'string', description: 'The city name (e.g. "San Francisco", "London").' },
-        unit: {
-          type: 'string',
-          enum: ['celsius', 'fahrenheit'],
-          default: 'celsius',
-          description: 'Temperature unit.'
-        }
-      },
-      required: ['location']
-    },
-    execute: async (args: Record<string, any>) => {
-      const { location, unit = 'celsius' } = args;
-      // Simulate delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      const temp = Math.floor(Math.random() * 15) + 15; // 15 to 30
-      const conditions = ['Sunny', 'Rainy', 'Cloudy', 'Overcast', 'Clear Sky'];
-      const condition = conditions[Math.floor(Math.random() * conditions.length)];
-      return {
-        location,
-        temperature: `${temp}°${unit === 'celsius' ? 'C' : 'F'}`,
-        condition,
-        humidity: '58%',
-        windSpeed: '14 km/h'
-      };
-    }
-  }
-};
+import Link from "next/link";
 
 export default function Home() {
   return (
-    <main style={{
-      display: "flex",
-      flexDirection: "column",
-      height: "100vh",
-      width: "100vw",
-      padding: "16px",
-      boxSizing: "border-box",
-      background: "#0a0a0f",
-      margin: 0,
-      overflow: "hidden"
-    }}>
-      <TuringChat 
-        showThreadList={true}
-        showModelSelector={true}
-        theme="vigilante" 
-        tools={playgroundTools}
-        style={{
-          flex: 1,
-          width: "100%",
-          height: "100%",
-          boxSizing: "border-box"
-        }}
-        height="100%"
-      />
+    <main>
+      {/* ── Hero ────────────────────────────────────────────────────────── */}
+      <section className="hero">
+        <div className="wrap">
+          <p className="eyebrow">Local model evaluation</p>
+          <h1>
+            Which of your models is <em>actually</em> best?
+          </h1>
+          <p className="lede">
+            You have eight models pulled in Ollama. Public benchmarks tested none of your
+            prompts on none of your hardware. Turing Chat asks all of them the same
+            question, times every response, and hides the names until you have picked a
+            winner.
+          </p>
+          <div className="cta-row">
+            <Link href="/arena" className="btn btn--primary">
+              Open the Arena
+            </Link>
+            <Link href="/chat" className="btn btn--ghost">
+              Try the chat
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── How ─────────────────────────────────────────────────────────── */}
+      <section className="section">
+        <div className="wrap">
+          <p className="section__label">How it works</p>
+          <div className="steps">
+            <div className="step">
+              <span className="step__n">01</span>
+              <h3>Ask once</h3>
+              <p>
+                One prompt goes to every model you selected. They run one at a time, so
+                they never compete for the same GPU while being measured.
+              </p>
+            </div>
+            <div className="step">
+              <span className="step__n">02</span>
+              <h3>Judge blind</h3>
+              <p>
+                Answers appear under shuffled labels. You cannot tell which came from the
+                14B model, so you grade the writing instead of the parameter count.
+              </p>
+            </div>
+            <div className="step">
+              <span className="step__n">03</span>
+              <h3>Keep the score</h3>
+              <p>
+                Each pick becomes a pairwise vote. An Elo table builds up across every
+                comparison you run and survives a reload.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Measurements ────────────────────────────────────────────────── */}
+      <section className="section">
+        <div className="wrap">
+          <p className="section__label">What gets measured</p>
+          <h2>Timings you can trust</h2>
+          <p>
+            Everything is measured client-side so the numbers stay comparable between
+            providers, and the interface throttles its own redraws so rendering never
+            leaks into the results.
+          </p>
+          <div className="spec-scroll">
+            <table className="spec">
+              <thead>
+                <tr>
+                  <th>Metric</th>
+                  <th>What it tells you</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>TTFT</td>
+                  <td>
+                    Time to first token — how long the model sat there before saying
+                    anything. Dominated by prompt evaluation and cold model loads.
+                  </td>
+                </tr>
+                <tr>
+                  <td>tok/s</td>
+                  <td>
+                    Decode throughput, measured after the first token arrives so a slow
+                    start does not disguise itself as slow generation.
+                  </td>
+                </tr>
+                <tr>
+                  <td>Total</td>
+                  <td>Wall-clock time for the complete response.</td>
+                </tr>
+                <tr>
+                  <td>Elo</td>
+                  <td>
+                    Rating from your own pairwise votes, replayed in chronological order
+                    so the standings never depend on load order.
+                  </td>
+                </tr>
+                <tr>
+                  <td>Median</td>
+                  <td>
+                    Performance is reported as a median, not a mean — one cold load would
+                    otherwise poison the average for a model.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Install ─────────────────────────────────────────────────────── */}
+      <section className="section">
+        <div className="wrap">
+          <p className="section__label">In your own app</p>
+          <h2>Two components, no backend</h2>
+          <p>
+            Everything runs in the browser against your local server. Nothing is uploaded,
+            and there is no service to sign up for.
+          </p>
+          <pre className="snippet">
+            <code>
+              <span className="c">{"// npm install @turing-chat/react @turing-chat/core"}</span>
+              {"\n\n"}
+              <span className="k">import</span>
+              {" { ModelArena } "}
+              <span className="k">from</span>
+              {' "@turing-chat/react";\n'}
+              <span className="k">import</span>
+              {' "@turing-chat/react/themes/instrument.css";\n\n'}
+              <span className="k">export default function</span>
+              {" Page() {\n  "}
+              <span className="k">return</span>
+              {' <ModelArena baseUrl="http://localhost:11434" />;\n}'}
+            </code>
+          </pre>
+        </div>
+      </section>
+
+      {/* ── Close ───────────────────────────────────────────────────────── */}
+      <section className="section" style={{ borderBottom: "none" }}>
+        <div className="wrap">
+          <p className="section__label">No models installed?</p>
+          <h2>The demo runs on nothing at all</h2>
+          <p>
+            Both demos ship with a simulated provider — three models with different speeds
+            and answering styles — so you can try the whole flow without downloading a
+            single weight.
+          </p>
+          <div className="cta-row" style={{ marginTop: 24 }}>
+            <Link href="/arena" className="btn btn--primary">
+              Open the Arena
+            </Link>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

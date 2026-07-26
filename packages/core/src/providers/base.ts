@@ -9,7 +9,7 @@ export type { TuringProvider };
 /** Configuration accepted by {@link createProvider}. */
 export interface ProviderConfig {
   /** Provider type identifier. */
-  type: 'ollama' | 'lm-studio' | (string & {});
+  type: 'ollama' | 'lm-studio' | 'mock' | (string & {});
   /** Override the default base URL for the provider. */
   baseUrl?: string;
 }
@@ -35,7 +35,13 @@ export async function createProvider(config: ProviderConfig): Promise<TuringProv
       const { lmStudioProvider } = await import('./lmstudio.js');
       return lmStudioProvider({ baseUrl: config.baseUrl });
     }
+    case 'mock': {
+      const { mockProvider } = await import('./mock.js');
+      return mockProvider();
+    }
     default:
-      throw new Error(`Unknown provider type: "${config.type}". Supported: ollama, lm-studio.`);
+      throw new Error(
+        `Unknown provider type: "${config.type}". Supported: ollama, lm-studio, mock.`,
+      );
   }
 }

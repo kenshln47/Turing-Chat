@@ -1,28 +1,11 @@
 import '@testing-library/jest-dom/vitest';
-import React from 'react';
-import { vi } from 'vitest';
 
-vi.mock('react-syntax-highlighter', () => {
-  const MockHighlighter = ({ children, language, PreTag = 'pre', CodeTag = 'code', style, customStyle, ...props }: any) => {
-    return React.createElement(
-      PreTag,
-      { style: customStyle, ...props },
-      React.createElement(
-        CodeTag,
-        { className: language ? `language-${language}` : undefined },
-        children
-      )
-    );
-  };
-  (MockHighlighter as any).registerLanguage = vi.fn();
-
-  return {
-    Prism: MockHighlighter,
-    PrismLight: MockHighlighter,
-    Light: MockHighlighter,
-    default: MockHighlighter,
-  };
-});
-
-
-
+// NOTE: `react-syntax-highlighter` is deliberately NOT mocked.
+//
+// This file used to stub it with a component that rendered plain text. Every
+// test still saw a code block, so the suite stayed green — while proving
+// nothing about the project's headline feature. A regression that disabled
+// highlighting entirely would have gone unnoticed.
+//
+// Highlighting is fast enough to run for real in tests, and
+// MarkdownRendering.test.tsx asserts on actual Prism token output.

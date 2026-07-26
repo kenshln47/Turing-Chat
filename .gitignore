@@ -14,3 +14,6 @@ out
 *.py
 *.txt
 *.log
+
+# Local tooling
+.claude/

@@ -10,7 +10,36 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { generateId, type Thread, type ConversationMemory } from '../types/core';
+import {
+  generateId,
+  type Message,
+  type Thread,
+  type ConversationMemory,
+} from '../types/core';
+
+/** Longest auto-generated thread title, in characters. */
+const MAX_AUTO_TITLE_LENGTH = 60;
+
+/** Title given to a thread before its first user message arrives. */
+const UNTITLED = 'New Conversation';
+
+/**
+ * Derives a thread title from the first user message.
+ *
+ * Titles come from the user's own words rather than a model call, so naming
+ * costs nothing and works identically offline.
+ */
+function deriveTitle(messages: Message[]): string | null {
+  const firstUser = messages.find((m) => m.role === 'user');
+  if (!firstUser) return null;
+
+  const flat = firstUser.content.replace(/\s+/g, ' ').trim();
+  if (flat.length === 0) return null;
+
+  return flat.length > MAX_AUTO_TITLE_LENGTH
+    ? `${flat.slice(0, MAX_AUTO_TITLE_LENGTH).trimEnd()}…`
+    : flat;
+}
 
 // ────────────────────────────────────────────────────────────────────────────
 // Return type
@@ -26,8 +55,22 @@ export interface UseConversationReturn {
   isLoading: boolean;
   /** Create a new thread with an optional title. */
   createThread: (title?: string) => Promise<Thread>;
-  /** Switch the active thread by ID. */
-  switchThread: (id: string) => Promise<void>;
+  /** Switch the active thread by ID, returning it so callers can load its messages. */
+  switchThread: (id: string) => Promise<Thread | null>;
+  /**
+   * Begin a new conversation without writing anything yet.
+   *
+   * Nothing is persisted until the first message arrives, so opening a new
+   * chat and changing your mind never leaves an empty thread behind.
+   */
+  startNewThread: () => void;
+  /**
+   * Write messages into the active thread, creating one on first use and
+   * naming it from the first user message.
+   *
+   * @returns The saved thread, or `null` when there was nothing to save.
+   */
+  saveMessages: (messages: Message[]) => Promise<Thread | null>;
   /** Delete a thread by ID. */
   deleteThread: (id: string) => Promise<void>;
   /** Rename a thread. */
@@ -129,6 +172,14 @@ export function useConversation(
     };
   }, []);
 
+  // The active thread is mirrored in a ref so a save triggered by rapid
+  // streaming updates always sees the current thread rather than the one
+  // captured when the callback was created.
+  const activeThreadRef = useRef<Thread | null>(null);
+  useEffect(() => {
+    activeThreadRef.current = activeThread;
+  }, [activeThread]);
+
   // ── Load threads on mount ─────────────────────────────────────────────
   const loadThreads = useCallback(async () => {
     setIsLoading(true);
@@ -165,18 +216,64 @@ export function useConversation(
         setThreads((prev) => [thread, ...prev]);
         setActiveThread(thread);
       }
+      activeThreadRef.current = thread;
       return thread;
     },
     [store],
   );
 
+  // ── Start a new conversation ──────────────────────────────────────────
+  const startNewThread = useCallback(() => {
+    activeThreadRef.current = null;
+    setActiveThread(null);
+  }, []);
+
   // ── Switch thread ─────────────────────────────────────────────────────
   const switchThread = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<Thread | null> => {
       const thread = await store.getThread(id);
       if (thread && mountedRef.current) {
         setActiveThread(thread);
       }
+      return thread;
+    },
+    [store],
+  );
+
+  // ── Persist messages ──────────────────────────────────────────────────
+  const saveMessages = useCallback(
+    async (messages: Message[]): Promise<Thread | null> => {
+      if (messages.length === 0) return null;
+
+      const now = Date.now();
+      const existing = activeThreadRef.current;
+
+      const base: Thread = existing ?? {
+        id: generateId(),
+        title: UNTITLED,
+        createdAt: now,
+        updatedAt: now,
+        messages: [],
+      };
+
+      // Keep a manually chosen title; only fill in one we generated ourselves.
+      const title =
+        base.title === UNTITLED ? (deriveTitle(messages) ?? base.title) : base.title;
+
+      const updated: Thread = { ...base, title, messages, updatedAt: now };
+
+      await store.saveThread(updated);
+
+      if (mountedRef.current) {
+        activeThreadRef.current = updated;
+        setActiveThread(updated);
+        setThreads((prev) => {
+          const without = prev.filter((t) => t.id !== updated.id);
+          return [updated, ...without];
+        });
+      }
+
+      return updated;
     },
     [store],
   );
@@ -187,12 +284,13 @@ export function useConversation(
       await store.deleteThread(id);
       if (mountedRef.current) {
         setThreads((prev) => prev.filter((t) => t.id !== id));
-        if (activeThread?.id === id) {
+        if (activeThreadRef.current?.id === id) {
+          activeThreadRef.current = null;
           setActiveThread(null);
         }
       }
     },
-    [store, activeThread],
+    [store],
   );
 
   // ── Rename thread ─────────────────────────────────────────────────────
@@ -210,13 +308,14 @@ export function useConversation(
           setThreads((prev) =>
             prev.map((t) => (t.id === id ? updated : t)),
           );
-          if (activeThread?.id === id) {
+          if (activeThreadRef.current?.id === id) {
+            activeThreadRef.current = updated;
             setActiveThread(updated);
           }
         }
       }
     },
-    [store, activeThread],
+    [store],
   );
 
   // ── Export threads ────────────────────────────────────────────────────
@@ -241,6 +340,8 @@ export function useConversation(
     isLoading,
     createThread,
     switchThread,
+    startNewThread,
+    saveMessages,
     deleteThread,
     renameThread,
     exportThreads,

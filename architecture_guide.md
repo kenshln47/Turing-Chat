@@ -36,7 +36,7 @@ graph TD
 
 ### Monorepo Packages Breakdown
 1. **`@turing-ai/core`**: Framework-agnostic typescript package. Contains providers (`ollamaProvider`, `lmStudioProvider`), conversation memory layer (`IndexedDB`, `InMemory`), stream parsing helpers (`parseNDJSON`), and model preset definitions.
-2. **`@turing-ai/react`**: React package exporting hooks (`useTuringAgent`, `useModelManager`, `useConversation`) and components (`TuringChat`, `MessageBubble`, `InputBar`, `ModelSelector`, `ThreadList`). Integrates CSS themes like `vigilante.css`.
+2. **`@turing-ai/react`**: React package exporting hooks (`useTuringAgent`, `useModelManager`, `useConversation`) and components (`TuringChat`, `MessageBubble`, `InputBar`, `ModelSelector`, `ThreadList`). Integrates CSS themes like `instrument.css`.
 3. **`@turing-ai/nextjs`**: Next.js proxy route handler (`createTuringHandler`) allowing requests to go through a secure, rate-limited backend instead of connecting directly from the client.
 
 ---
@@ -105,25 +105,37 @@ When Compare Mode is active, `<TuringChat>` splits the page container into two p
 
 ---
 
-## 4. CSS Theme Variables (`vigilante.css`)
+## 4. CSS Theme Variables (`instrument.css`)
 
-The core style tokens in `packages/react/src/themes/vigilante.css` use a midnight-violet hacker aesthetic:
+Structure lives in `variables.css` (scale, rhythm, motion, shared primitives); colour lives in the
+theme. `instrument.css` is built on warm paper, black ink, and a single vermilion signal, with a
+darkroom variant that keeps the same identity:
 
 ```css
-[data-turing-theme="vigilante"] {
-  /* Colors */
-  --tac-color-bg: #0b0f19;              /* Midnight blue background */
-  --tac-color-bg-secondary: #111827;    /* Slate-900 border background */
-  --tac-color-accent: #8b5cf6;          /* Violet neon accent */
-  --tac-color-accent-hover: #a78bfa;    /* Bright purple hover */
-  --tac-color-border: #1e293b;          /* Dark gray-blue dividers */
+[data-turing-theme="instrument"] {
+  /* Surfaces — warm greys throughout, so nothing reads as dirty next to paper */
+  --tur-color-bg: #fbf8f1;
+  --tur-color-surface: #fffdf8;
 
-  /* Chat Message Bubbles */
-  --tac-msg-user-bg: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(99, 102, 241, 0.1) 100%);
-  --tac-msg-assistant-bg: rgba(255, 255, 255, 0.02);
+  /* Ink — never pure black on warm paper */
+  --tur-color-text: #17140f;
+  --tur-color-text-muted: #8a8271;
 
-  /* Terminal Console styling */
-  --tac-code-bg: #090d16;               /* Monospace console background */
-  --tac-code-text: #a78bfa;             /* Lavender code color */
+  /* One signal colour, used only where the interface speaks to you */
+  --tur-color-accent: #bf3b12;
+
+  /* Structure is carried by hairlines, not shadow */
+  --tur-color-border: #e3dbc7;
+
+  /* Status hues are distinct from the signal, so "fastest" is never the accent */
+  --tur-color-success: #1f6f43;
+  --tur-color-error: #a11c1c;
 }
 ```
+
+Components reference tokens and never hardcode a colour, so a theme swap changes the entire
+interface without touching component code. Three typographic voices are assigned by role: a serif
+for prose, a sans for controls, and a monospace for every number and identifier.
+
+The scheme follows the operating system and can be pinned with
+`data-turing-scheme="light" | "dark"` on any ancestor.

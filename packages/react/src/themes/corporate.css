@@ -52,6 +52,27 @@
   --tur-code-bg: #f8fafc;
   --tur-code-text: #334155;
 
+  /* ──── Elevation & interaction ──────────────────────────────────────── */
+  /* The page background is already tinted, so a raised surface has to go
+     lighter than the page rather than darker. */
+  --tur-color-surface-raised: #ffffff;
+  --tur-color-surface-hover: rgba(15, 23, 42, 0.04);
+  --tur-color-border-strong: #cbd5e1;
+  --tur-color-accent-text: #ffffff;
+  --tur-code-header-bg: #eef0f4;
+
+  /* ──── Semantic status ──────────────────────────────────────────────── */
+  --tur-color-success: #15803d;
+  --tur-color-success-subtle: rgba(21, 128, 61, 0.1);
+  --tur-color-warning: #b45309;
+  --tur-color-warning-subtle: rgba(180, 83, 9, 0.1);
+  --tur-color-error: #b91c1c;
+  --tur-color-error-subtle: rgba(185, 28, 28, 0.08);
+  --tur-color-info: #0369a1;
+  --tur-color-info-subtle: rgba(3, 105, 161, 0.1);
+  --tur-color-neutral: #64748b;
+  --tur-color-neutral-subtle: rgba(100, 116, 139, 0.1);
+
   color-scheme: light;
 }
 

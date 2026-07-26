@@ -1,99 +1,359 @@
 /* ============================================================================
- * Turing Chat — Base Design Tokens
- * CSS Custom Properties foundation for all themes.
+ * Turing Chat — Structural tokens
+ *
+ * Everything here is structure: scale, rhythm, motion, layering. Colour lives
+ * in the theme files, so a theme can change the entire look without touching a
+ * single component.
+ *
+ * Naming: --tur-<category>-<role>[-<variant>]
  * ========================================================================== */
 
 [data-turing-theme] {
-  /* ──── Typography ─────────────────────────────────────────────────────── */
-  --tur-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
-    Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
-  --tur-font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas',
-    'SF Mono', 'Monaco', monospace;
-  --tur-font-size-xs: 0.6875rem;   /* 11px */
-  --tur-font-size-sm: 0.8125rem;   /* 13px */
-  --tur-font-size-base: 0.9375rem; /* 15px */
-  --tur-font-size-lg: 1.125rem;    /* 18px */
-  --tur-font-size-xl: 1.5rem;      /* 24px */
+  /* ──── Typography ─────────────────────────────────────────────────────────
+   * Three voices, each with one job:
+   *   serif — display and prose, the reading voice
+   *   sans  — controls and labels, the interface voice
+   *   mono  — every number and identifier, the instrument voice
+   * All system stacks: a component library should not drag a webfont into
+   * someone else's bundle.
+   */
+  --tur-font-serif: ui-serif, 'Iowan Old Style', 'Palatino Linotype', Palatino,
+    'Book Antiqua', Georgia, serif;
+  --tur-font-sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --tur-font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', 'Roboto Mono',
+    Menlo, Consolas, 'Liberation Mono', monospace;
+
+  --tur-font-size-xs: 0.6875rem;   /* 11px — instrument labels */
+  --tur-font-size-sm: 0.8125rem;   /* 13px — controls          */
+  --tur-font-size-base: 0.9375rem; /* 15px — body              */
+  --tur-font-size-lg: 1.125rem;    /* 18px — subheads          */
+  --tur-font-size-xl: 1.5rem;      /* 24px — headings          */
+  --tur-font-size-2xl: 2rem;       /* 32px — display           */
+
   --tur-font-weight-normal: 400;
   --tur-font-weight-medium: 500;
   --tur-font-weight-semibold: 600;
   --tur-font-weight-bold: 700;
-  --tur-line-height-tight: 1.3;
+
+  --tur-line-height-tight: 1.25;
   --tur-line-height-base: 1.6;
-  --tur-line-height-relaxed: 1.8;
+  --tur-line-height-relaxed: 1.75;
 
-  /* ──── Spacing ────────────────────────────────────────────────────────── */
-  --tur-space-xs: 0.25rem;  /* 4px  */
-  --tur-space-sm: 0.5rem;   /* 8px  */
-  --tur-space-md: 0.75rem;  /* 12px */
-  --tur-space-lg: 1rem;     /* 16px */
-  --tur-space-xl: 1.5rem;   /* 24px */
-  --tur-space-2xl: 2rem;    /* 32px */
-  --tur-space-3xl: 3rem;    /* 48px */
+  /* Wide tracking on small uppercase text, the way a panel is silkscreened. */
+  --tur-tracking-label: 0.09em;
+  --tur-tracking-tight: -0.015em;
 
-  /* ──── Borders & Radii ────────────────────────────────────────────────── */
-  --tur-radius-sm: 8px;
-  --tur-radius-md: 12px;
-  --tur-radius-lg: 16px;
-  --tur-radius-xl: 20px;
+  /* ──── Spacing — 4px grid ─────────────────────────────────────────────── */
+  --tur-space-xs: 0.25rem;
+  --tur-space-sm: 0.5rem;
+  --tur-space-md: 0.75rem;
+  --tur-space-lg: 1rem;
+  --tur-space-xl: 1.5rem;
+  --tur-space-2xl: 2rem;
+  --tur-space-3xl: 3rem;
+
+  /* ──── Radii ──────────────────────────────────────────────────────────────
+   * Deliberately tight. Instruments have machined edges, not pillowed ones,
+   * and heavy rounding is the single loudest tell of a generic template.
+   */
+  --tur-radius-xs: 2px;
+  --tur-radius-sm: 3px;
+  --tur-radius-md: 4px;
+  --tur-radius-lg: 6px;
+  --tur-radius-xl: 8px;
   --tur-radius-full: 9999px;
   --tur-border-width: 1px;
 
-  /* ──── Transitions & Animations ───────────────────────────────────────── */
-  --tur-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --tur-transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-  --tur-transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
-  --tur-transition-spring: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* ──── Motion ─────────────────────────────────────────────────────────── */
+  --tur-transition-fast: 100ms cubic-bezier(0.2, 0, 0.1, 1);
+  --tur-transition-base: 180ms cubic-bezier(0.2, 0, 0.1, 1);
+  --tur-transition-slow: 300ms cubic-bezier(0.2, 0, 0.1, 1);
+  --tur-transition-spring: 380ms cubic-bezier(0.34, 1.3, 0.64, 1);
 
   /* ──── Layout ─────────────────────────────────────────────────────────── */
-  --tur-chat-max-width: 768px;
-  --tur-sidebar-width: 280px;
+  --tur-chat-max-width: 720px;
+  --tur-sidebar-width: 250px;
   --tur-input-max-height: 200px;
-  --tur-input-min-height: 48px;
-  --tur-header-height: 56px;
-  --tur-message-max-width: 85%;
+  --tur-input-min-height: 42px;
+  --tur-header-height: 48px;
+  --tur-message-max-width: 84%;
+  --tur-arena-column-min: 288px;
 
-  /* ──── Z-Index Scale ──────────────────────────────────────────────────── */
+  /* ──── Z-index ────────────────────────────────────────────────────────── */
   --tur-z-base: 0;
+  --tur-z-sticky: 50;
   --tur-z-dropdown: 100;
   --tur-z-overlay: 200;
   --tur-z-modal: 300;
   --tur-z-toast: 400;
 
-  /* ──── Shadows (overridden per theme) ─────────────────────────────────── */
-  --tur-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --tur-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --tur-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  --tur-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-
-  /* ──── Base Color Slots (overridden per theme) ────────────────────────── */
+  /* ──── Neutral fallbacks ──────────────────────────────────────────────────
+   * A theme file overrides all of these. They exist so an unthemed render is
+   * legible rather than invisible.
+   */
   --tur-color-bg: #ffffff;
-  --tur-color-bg-secondary: #f8f9fa;
-  --tur-color-bg-tertiary: #f0f1f3;
+  --tur-color-bg-secondary: #f6f6f6;
+  --tur-color-bg-tertiary: #ededed;
   --tur-color-surface: #ffffff;
-  --tur-color-text: #1a1a1a;
-  --tur-color-text-secondary: #6b7280;
-  --tur-color-text-muted: #9ca3af;
-  --tur-color-accent: #2563eb;
-  --tur-color-accent-hover: #1d4ed8;
-  --tur-color-accent-subtle: rgba(37, 99, 235, 0.1);
-  --tur-color-border: #e5e7eb;
+  --tur-color-surface-raised: #fafafa;
+  --tur-color-surface-hover: rgba(0, 0, 0, 0.04);
+  --tur-color-text: #111111;
+  --tur-color-text-secondary: #555555;
+  --tur-color-text-muted: #8a8a8a;
+  --tur-color-text-inverse: #ffffff;
+  --tur-color-accent: #333333;
+  --tur-color-accent-hover: #000000;
+  --tur-color-accent-subtle: rgba(0, 0, 0, 0.06);
+  --tur-color-accent-text: #ffffff;
+  --tur-color-border: #e0e0e0;
+  --tur-color-border-strong: #c4c4c4;
   --tur-color-border-focus: var(--tur-color-accent);
-  --tur-color-error: #ef4444;
-  --tur-color-success: #22c55e;
-  --tur-color-warning: #f59e0b;
+  --tur-color-success: #1f7a4d;
+  --tur-color-success-subtle: rgba(31, 122, 77, 0.1);
+  --tur-color-warning: #96600a;
+  --tur-color-warning-subtle: rgba(150, 96, 10, 0.1);
+  --tur-color-error: #a51c1c;
+  --tur-color-error-subtle: rgba(165, 28, 28, 0.08);
+  --tur-color-info: #1f4e79;
+  --tur-color-info-subtle: rgba(31, 78, 121, 0.1);
+  --tur-color-neutral: #737373;
+  --tur-color-neutral-subtle: rgba(115, 115, 115, 0.1);
 
-  /* ──── Component-Specific Tokens ──────────────────────────────────────── */
-  --tur-msg-user-bg: var(--tur-color-accent);
-  --tur-msg-user-text: #ffffff;
-  --tur-msg-assistant-bg: var(--tur-color-bg-secondary);
+  --tur-shadow-sm: 0 1px 1px rgba(0, 0, 0, 0.04);
+  --tur-shadow-md: 0 2px 4px rgba(0, 0, 0, 0.06);
+  --tur-shadow-lg: 0 6px 16px rgba(0, 0, 0, 0.08);
+  --tur-shadow-xl: 0 16px 40px rgba(0, 0, 0, 0.12);
+  --tur-ring-accent: 0 0 0 2px var(--tur-color-accent-subtle);
+
+  --tur-msg-user-bg: var(--tur-color-surface-raised);
+  --tur-msg-user-text: var(--tur-color-text);
+  --tur-msg-user-border: var(--tur-color-border);
+  --tur-msg-assistant-bg: var(--tur-color-surface);
   --tur-msg-assistant-text: var(--tur-color-text);
+  --tur-msg-assistant-border: var(--tur-color-border);
+
   --tur-input-bg: var(--tur-color-surface);
   --tur-input-border: var(--tur-color-border);
   --tur-input-text: var(--tur-color-text);
   --tur-input-placeholder: var(--tur-color-text-muted);
-  --tur-scrollbar-thumb: var(--tur-color-border);
-  --tur-scrollbar-track: transparent;
+
   --tur-code-bg: var(--tur-color-bg-tertiary);
   --tur-code-text: var(--tur-color-text);
+  --tur-code-header-bg: var(--tur-color-bg-secondary);
+
+  --tur-scrollbar-thumb: var(--tur-color-border-strong);
+  --tur-scrollbar-track: transparent;
+}
+
+/* ============================================================================
+ * Primitives
+ * ========================================================================== */
+
+/* Silkscreened panel label: small, uppercase, widely tracked. */
+[data-turing-theme] .tur-label {
+  font-family: var(--tur-font-mono);
+  font-size: var(--tur-font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tur-tracking-label);
+  color: var(--tur-color-text-muted);
+  font-weight: var(--tur-font-weight-medium);
+}
+
+/* Every number in the interface aligns digit-for-digit. */
+[data-turing-theme] .tur-num {
+  font-family: var(--tur-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ──── Status badge ─────────────────────────────────────────────────────────
+ * A single rule covers every state; colour arrives through two custom
+ * properties set by the data-state selectors below.
+ */
+[data-turing-theme] .tur-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tur-space-xs);
+  padding: 1px 6px;
+  border-radius: var(--tur-radius-xs);
+  font-family: var(--tur-font-mono);
+  font-size: var(--tur-font-size-xs);
+  font-weight: var(--tur-font-weight-semibold);
+  letter-spacing: var(--tur-tracking-label);
+  text-transform: uppercase;
+  white-space: nowrap;
+  line-height: 1.5;
+  color: var(--tur-status-fg, var(--tur-color-text-muted));
+  background: var(--tur-status-bg, transparent);
+  border: 1px solid var(--tur-status-fg, var(--tur-color-border));
+}
+
+[data-turing-theme] .tur-badge[data-state='success'],
+[data-turing-theme] .tur-badge[data-state='complete'] {
+  --tur-status-fg: var(--tur-color-success);
+  --tur-status-bg: var(--tur-color-success-subtle);
+}
+[data-turing-theme] .tur-badge[data-state='warning'],
+[data-turing-theme] .tur-badge[data-state='streaming'] {
+  --tur-status-fg: var(--tur-color-warning);
+  --tur-status-bg: var(--tur-color-warning-subtle);
+}
+[data-turing-theme] .tur-badge[data-state='error'] {
+  --tur-status-fg: var(--tur-color-error);
+  --tur-status-bg: var(--tur-color-error-subtle);
+}
+[data-turing-theme] .tur-badge[data-state='pending'],
+[data-turing-theme] .tur-badge[data-state='aborted'],
+[data-turing-theme] .tur-badge[data-state='neutral'] {
+  --tur-status-fg: var(--tur-color-neutral);
+  --tur-status-bg: var(--tur-color-neutral-subtle);
+}
+
+/* ──── Buttons ──────────────────────────────────────────────────────────── */
+
+[data-turing-theme] .tur-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tur-space-sm);
+  padding: 6px 12px;
+  border-radius: var(--tur-radius-sm);
+  border: 1px solid transparent;
+  font-family: var(--tur-font-sans);
+  font-size: var(--tur-font-size-sm);
+  font-weight: var(--tur-font-weight-medium);
+  line-height: 1.4;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background var(--tur-transition-fast),
+    border-color var(--tur-transition-fast),
+    color var(--tur-transition-fast);
+}
+
+[data-turing-theme] .tur-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+[data-turing-theme] .tur-btn:focus-visible {
+  outline: 2px solid var(--tur-color-accent);
+  outline-offset: 1px;
+}
+
+[data-turing-theme] .tur-btn--primary {
+  background: var(--tur-color-accent);
+  color: var(--tur-color-accent-text);
+  border-color: var(--tur-color-accent);
+  font-weight: var(--tur-font-weight-semibold);
+}
+[data-turing-theme] .tur-btn--primary:hover:not(:disabled) {
+  background: var(--tur-color-accent-hover);
+  border-color: var(--tur-color-accent-hover);
+}
+
+[data-turing-theme] .tur-btn--ghost {
+  background: transparent;
+  color: var(--tur-color-text-secondary);
+  border-color: var(--tur-color-border-strong);
+}
+[data-turing-theme] .tur-btn--ghost:hover:not(:disabled) {
+  background: var(--tur-color-surface-hover);
+  color: var(--tur-color-text);
+  border-color: var(--tur-color-text-muted);
+}
+
+[data-turing-theme] .tur-btn--danger {
+  background: transparent;
+  color: var(--tur-color-error);
+  border-color: var(--tur-color-error-subtle);
+}
+[data-turing-theme] .tur-btn--danger:hover:not(:disabled) {
+  background: var(--tur-color-error-subtle);
+  border-color: var(--tur-color-error);
+}
+
+/* A latching switch: off is outlined, on is filled and inked. */
+[data-turing-theme] .tur-btn--toggle {
+  background: transparent;
+  color: var(--tur-color-text-secondary);
+  border-color: var(--tur-color-border-strong);
+  font-family: var(--tur-font-mono);
+  font-size: var(--tur-font-size-xs);
+  padding: 4px 9px;
+  border-radius: var(--tur-radius-xs);
+}
+[data-turing-theme] .tur-btn--toggle:hover:not(:disabled) {
+  color: var(--tur-color-text);
+  border-color: var(--tur-color-text-muted);
+}
+[data-turing-theme] .tur-btn--toggle[aria-pressed='true'] {
+  background: var(--tur-color-accent);
+  color: var(--tur-color-accent-text);
+  border-color: var(--tur-color-accent);
+}
+
+/* ──── Scrollbars ───────────────────────────────────────────────────────── */
+
+[data-turing-theme] .tur-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--tur-scrollbar-thumb) var(--tur-scrollbar-track);
+}
+[data-turing-theme] .tur-scroll::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+[data-turing-theme] .tur-scroll::-webkit-scrollbar-track {
+  background: var(--tur-scrollbar-track);
+}
+[data-turing-theme] .tur-scroll::-webkit-scrollbar-thumb {
+  background: var(--tur-scrollbar-thumb);
+  border-radius: var(--tur-radius-full);
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+/* ──── Thread sidebar ─────────────────────────────────────────────────────
+ * Owned by CSS rather than the component so a media query can collapse it.
+ */
+
+[data-turing-theme] [data-turing='thread-list'] {
+  display: flex;
+  flex-direction: column;
+  width: var(--tur-sidebar-width);
+  flex-shrink: 0;
+}
+
+/* ──── Narrow screens ─────────────────────────────────────────────────────
+ * Structural, so every theme inherits it.
+ *
+ * The sidebar is a fixed 250px. On a 375px phone that left the conversation
+ * itself 87px wide — narrower than a single word of code. Below this
+ * breakpoint the transcript takes the full width.
+ */
+
+@media (max-width: 640px) {
+  [data-turing-theme] [data-turing='thread-list'] {
+    display: none;
+  }
+
+  [data-turing-theme] [data-turing='chat'] [data-turing='message-list'] {
+    padding: var(--tur-space-md);
+  }
+
+  [data-turing-theme] [data-turing='message'] {
+    max-width: 96%;
+  }
+}
+
+/* ──── Reduced motion ───────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  [data-turing-theme] *,
+  [data-turing-theme] *::before,
+  [data-turing-theme] *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

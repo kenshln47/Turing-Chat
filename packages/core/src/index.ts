@@ -19,6 +19,7 @@ export type {
   ConnectionStatus,
   ExecutableTool,
   TuringConfig,
+  RunMetrics,
 } from './types.js';
 
 export { generateId } from './types.js';
@@ -30,6 +31,8 @@ export { ollamaProvider } from './providers/index.js';
 export type { OllamaProviderConfig } from './providers/index.js';
 export { lmStudioProvider } from './providers/index.js';
 export type { LMStudioProviderConfig } from './providers/index.js';
+export { mockProvider } from './providers/index.js';
+export type { MockProviderConfig, MockModelSpec } from './providers/index.js';
 
 // --- Streaming -------------------------------------------------------------
 export { parseNDJSON, parseSSE, streamChat } from './streaming/index.js';
@@ -51,3 +54,43 @@ export {
 
 // --- Tools -----------------------------------------------------------------
 export { ToolRegistry } from './tools/index.js';
+
+// --- Metrics ---------------------------------------------------------------
+export { createMetricsCollector } from './metrics/index.js';
+export type { MetricsCollector, MetricsCollectorOptions } from './metrics/index.js';
+
+// --- Evaluation ------------------------------------------------------------
+export {
+  runArena,
+  recordVote,
+  recordWinner,
+  computeLeaderboard,
+  expectedScore,
+  applyElo,
+  DEFAULT_RATING,
+  DEFAULT_K_FACTOR,
+  createEvalStore,
+  createInMemoryEvalStore,
+  createIndexedDBEvalStore,
+  isIndexedDBAvailable,
+  createSuite,
+  createStarterSuite,
+  runSuite,
+  toMarkdownReport,
+  toLeaderboardCsv,
+} from './eval/index.js';
+export type {
+  ArenaOptions,
+  ArenaEntry,
+  ArenaEntryStatus,
+  ArenaRun,
+  Vote,
+  PromptCase,
+  PromptSuite,
+  ModelStanding,
+  LeaderboardOptions,
+  EvalStore,
+  EvalArchive,
+  RunSuiteOptions,
+  ReportOptions,
+} from './eval/index.js';

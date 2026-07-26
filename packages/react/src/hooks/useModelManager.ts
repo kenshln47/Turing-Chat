@@ -103,6 +103,15 @@ export function useModelManager(
     };
   }, []);
 
+  // The active model is mirrored in a ref so `refresh` does not depend on it.
+  // Depending on the state directly meant selecting the first model changed
+  // the callback's identity, which re-triggered the fetch effect that had just
+  // set it — a wasted round-trip to the server on every mount.
+  const activeModelRef = useRef(activeModel);
+  useEffect(() => {
+    activeModelRef.current = activeModel;
+  }, [activeModel]);
+
   // ── Fetch model list ──────────────────────────────────────────────────
   const refresh = useCallback(async () => {
     setIsLoading(true);
@@ -113,8 +122,9 @@ export function useModelManager(
       if (mountedRef.current) {
         setModels(list);
         // Auto-select first model if none is active
-        if (!activeModel && list.length > 0) {
-          setActiveModel(list[0].name);
+        if (!activeModelRef.current && list.length > 0) {
+          activeModelRef.current = list[0]!.name;
+          setActiveModel(list[0]!.name);
         }
       }
     } catch (err) {
@@ -124,7 +134,7 @@ export function useModelManager(
     } finally {
       if (mountedRef.current) setIsLoading(false);
     }
-  }, [provider, activeModel]);
+  }, [provider]);
 
   // Fetch on mount
   useEffect(() => {
@@ -180,7 +190,8 @@ export function useModelManager(
         await provider.deleteModel(name);
         if (mountedRef.current) {
           setModels((prev) => prev.filter((m) => m.name !== name));
-          if (activeModel === name) {
+          if (activeModelRef.current === name) {
+            activeModelRef.current = '';
             setActiveModel('');
           }
         }
@@ -191,7 +202,7 @@ export function useModelManager(
         throw err;
       }
     },
-    [provider, activeModel],
+    [provider],
   );
 
   return {

@@ -233,8 +233,12 @@ describe('Tier 2 - Boundary & Corner Cases', () => {
       const msg = createMockMessage('```markdown\nThis is **not bold** inside code\n```');
       const { container } = render(<MessageBubble message={msg} />);
       const codeContent = container.querySelector('[data-turing="code-block"] pre code')?.textContent;
+      // The asterisks survive verbatim — the markdown parser did not consume them.
       expect(codeContent).toContain('This is **not bold** inside code');
-      expect(screen.queryByText('not bold')).not.toBeInTheDocument();
+      // Prism may style the run as a markdown bold *token*, but it must never
+      // become a real <strong>: that would mean the fence leaked into the
+      // markdown renderer.
+      expect(container.querySelector('strong')).not.toBeInTheDocument();
     });
 
     it('handles language tags with special characters or numbers like c++ or react-jsx', () => {

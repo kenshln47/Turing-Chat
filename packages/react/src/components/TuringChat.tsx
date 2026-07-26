@@ -16,12 +16,14 @@ import {
 import type {
   Message,
   AgentPreset,
+  ConversationMemory,
   ExecutableTool,
 } from '@turing-chat/core';
 import {
   TuringProvider as CoreProvider,
   getPreset,
   getAllPresets,
+  createMemory,
 } from '@turing-chat/core';
 
 import {
@@ -35,6 +37,15 @@ import { InputBar } from './InputBar';
 import { StatusIndicator } from './StatusIndicator';
 import { ThreadList } from './ThreadList';
 import { ModelSelector } from './ModelSelector';
+import {
+  BoltIcon,
+  CompareIcon,
+  FileTextIcon,
+  SearchIcon,
+  ShieldIcon,
+  TargetIcon,
+  WarningIcon,
+} from './icons';
 
 // ────────────────────────────────────────────────────────────────────────────
 // Props
@@ -49,6 +60,13 @@ export interface TuringChatProps {
   baseUrl?: string;
   /** Supply your own pre-built provider instance. */
   provider?: CoreProvider;
+  /**
+   * Model shown in the right-hand column when compare mode is on.
+   * Defaults to the same model as the left column.
+   */
+  compareModel?: string;
+  /** Start with the side-by-side comparison view open. */
+  defaultCompareMode?: boolean;
 
   // ── Behavior ────────────────────────────────────────────────────────────
   /** Agent preset name or inline config. */
@@ -59,10 +77,17 @@ export interface TuringChatProps {
   temperature?: number;
   /** Registered tools keyed by name. */
   tools?: Record<string, ExecutableTool>;
+  /**
+   * Where conversation history is stored.
+   *
+   * Defaults to IndexedDB in the browser, so conversations survive a reload.
+   * Pass `false` to keep everything in memory, or supply your own backend.
+   */
+  memory?: ConversationMemory | false;
 
   // ── Appearance ──────────────────────────────────────────────────────────
   /** Visual theme. */
-  theme?: 'vigilante' | 'minimal' | 'corporate' | 'custom';
+  theme?: 'instrument' | 'minimal' | 'corporate' | 'custom';
   /** Logo title branding in the header. Default "Turing Chat" */
   title?: string;
   /** Additional CSS class name on the root element. */
@@ -121,7 +146,7 @@ const rootStyle: CSSProperties = {
   fontFamily: 'var(--tur-font-sans)',
   borderRadius: 'var(--tur-radius-lg, 16px)',
   overflow: 'hidden',
-  border: '1px solid var(--tur-color-border, #1e1e2e)',
+  border: '1px solid var(--tur-color-border)',
   position: 'relative',
 };
 
@@ -137,7 +162,7 @@ const headerBarStyle: CSSProperties = {
   alignItems: 'center',
   justifyContent: 'space-between',
   padding: 'var(--tur-space-sm, 8px) var(--tur-space-lg, 16px)',
-  borderBottom: '1px solid var(--tur-color-border, #1e1e2e)',
+  borderBottom: '1px solid var(--tur-color-border)',
   gap: 'var(--tur-space-sm, 8px)',
   minHeight: 48,
 };
@@ -152,7 +177,7 @@ const messageListStyle: CSSProperties = {
 };
 
 const inputAreaStyle: CSSProperties = {
-  borderTop: '1px solid var(--tur-color-border, #1e1e2e)',
+  borderTop: '1px solid var(--tur-color-border)',
   padding: 'var(--tur-space-md, 12px)',
 };
 
@@ -163,18 +188,18 @@ const emptyStateStyle: CSSProperties = {
   justifyContent: 'center',
   flex: 1,
   gap: 'var(--tur-space-md, 12px)',
-  color: 'var(--tur-color-text-muted, #6b7280)',
+  color: 'var(--tur-color-text-muted)',
   fontFamily: 'var(--tur-font-sans)',
   textAlign: 'center',
   padding: 'var(--tur-space-xl, 24px)',
 };
 
 const titleStyle: CSSProperties = {
-  fontFamily: 'var(--tur-font-mono)',
-  fontSize: 'var(--tur-font-size-lg, 1.125rem)',
-  fontWeight: 600,
-  color: 'var(--tur-color-text, #e0e0e0)',
-  letterSpacing: '-0.01em',
+  fontFamily: 'var(--tur-font-sans)',
+  fontSize: 'var(--tur-font-size-base)',
+  fontWeight: 'var(--tur-font-weight-semibold)' as never,
+  color: 'var(--tur-color-text)',
+  letterSpacing: 'var(--tur-tracking-tight)',
 };
 
 interface InnerChatProps extends TuringChatProps {
@@ -187,6 +212,7 @@ interface InnerChatProps extends TuringChatProps {
   setCompareModel: (model: string) => void;
   activeModel: string;
   setActiveModel: (model: string) => void;
+  conversationMemory: ConversationMemory | undefined;
 }
 
 function InnerChat({
@@ -213,6 +239,7 @@ function InnerChat({
   setCompareModel,
   activeModel,
   setActiveModel,
+  conversationMemory,
   ...rest
 }: InnerChatProps) {
   // Left agent (primary)
@@ -238,8 +265,14 @@ function InnerChat({
     refresh: refreshModels,
   } = useModelManager(rest);
 
-  const { threads, activeThread, createThread, switchThread, deleteThread } =
-    useConversation();
+  const {
+    threads,
+    activeThread,
+    switchThread,
+    startNewThread,
+    saveMessages,
+    deleteThread,
+  } = useConversation(conversationMemory);
 
   const messageListRef = useRef<HTMLDivElement>(null);
   const compareMessageListRef = useRef<HTMLDivElement>(null);
@@ -260,12 +293,77 @@ function InnerChat({
     }
   }, [compareAgent.messages]);
 
-  // Sync conversation history to compareAgent when activeThread switches or main messages change
+  // Seed the comparison column with the conversation so far — but only at the
+  // moment compare mode is switched on. Copying continuously would overwrite
+  // model B's own reply with model A's the instant streaming finished, which
+  // defeats the entire point of comparing them.
+  const wasComparingRef = useRef(false);
   useEffect(() => {
-    if (compareMode && !agent.isStreaming && !compareAgent.isStreaming) {
+    if (compareMode && !wasComparingRef.current) {
       compareAgent.setMessages(agent.messages);
     }
-  }, [agent.messages, compareMode, agent.isStreaming, compareAgent.isStreaming]);
+    wasComparingRef.current = compareMode;
+    // `agent.messages` is read as the seed value, not tracked: re-running on
+    // every token is exactly the bug this replaced.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [compareMode]);
+
+  // Persist the transcript once a turn settles. Waiting for streaming to stop
+  // keeps this to one write per exchange instead of one per token.
+  useEffect(() => {
+    if (agent.isStreaming) return;
+    if (agent.messages.length === 0) return;
+    void saveMessages(agent.messages);
+  }, [agent.messages, agent.isStreaming, saveMessages]);
+
+  // Restore the most recent conversation on first load, so a refresh does not
+  // look like the history was lost.
+  const restoredRef = useRef(false);
+  useEffect(() => {
+    if (restoredRef.current) return;
+    if (threads.length === 0) return;
+    restoredRef.current = true;
+
+    // If the user already started talking while stored threads were loading,
+    // their live conversation wins — restoring would wipe it.
+    if (agent.messages.length > 0) return;
+
+    const mostRecent = threads[0];
+    if (!mostRecent || mostRecent.messages.length === 0) return;
+
+    void switchThread(mostRecent.id).then((thread) => {
+      if (thread) agent.setMessages(thread.messages);
+    });
+    // Runs once, as soon as stored threads become available.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [threads]);
+
+  const handleSelectThread = useCallback(
+    async (id: string) => {
+      const thread = await switchThread(id);
+      agent.setMessages(thread?.messages ?? []);
+      compareAgent.clear();
+    },
+    [switchThread, agent, compareAgent],
+  );
+
+  const handleNewThread = useCallback(() => {
+    startNewThread();
+    agent.clear();
+    compareAgent.clear();
+  }, [startNewThread, agent, compareAgent]);
+
+  const handleDeleteThread = useCallback(
+    async (id: string) => {
+      const wasActive = activeThread?.id === id;
+      await deleteThread(id);
+      if (wasActive) {
+        agent.clear();
+        compareAgent.clear();
+      }
+    },
+    [deleteThread, activeThread, agent, compareAgent],
+  );
 
   // Error callbacks
   useEffect(() => {
@@ -310,59 +408,67 @@ function InnerChat({
   // Render suggestion empty states
   const renderEmptyState = (sendFn: (content: string) => void) => (
     <div style={emptyStateStyle}>
-      {/* Pulsing SVG Radar Target */}
-      <div style={{ position: 'relative', width: 80, height: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
-        <div className="tac-radar-ring" style={{ width: 40, height: 40 }} />
-        <div className="tac-radar-ring" style={{ width: 40, height: 40 }} />
-        <div className="tac-radar-ring" style={{ width: 40, height: 40 }} />
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--tur-color-accent)" strokeWidth="1.5" style={{ zIndex: 1 }}>
-          <circle cx="12" cy="12" r="10" strokeDasharray="3 3" />
-          <circle cx="12" cy="12" r="6" />
-          <circle cx="12" cy="12" r="1.5" fill="var(--tur-color-accent)" />
-          <path d="M12 2v20M2 12h20" strokeWidth="1" strokeDasharray="2 2" />
-        </svg>
-      </div>
+      <TargetIcon size={32} style={{ color: 'var(--tur-color-accent)' }} />
 
-      <div style={{ fontFamily: 'var(--tur-font-mono)', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'var(--tur-color-accent)' }}>
-        Operative Online
+      <div>
+        <div
+          style={{
+            fontSize: 'var(--tur-font-size-lg)',
+            fontWeight: 'var(--tur-font-weight-semibold)' as never,
+            color: 'var(--tur-color-text)',
+            letterSpacing: 'var(--tur-tracking-tight)',
+          }}
+        >
+          Ready when you are
+        </div>
+        <div
+          style={{
+            fontSize: 'var(--tur-font-size-sm)',
+            color: 'var(--tur-color-text-muted)',
+            marginTop: 'var(--tur-space-xs)',
+          }}
+        >
+          Running entirely on your machine. Start typing, or try one of these.
+        </div>
       </div>
 
       {/* Suggestions Grid */}
       <div className="tac-suggestions-grid">
         {[
           {
-            icon: '⚡',
-            title: 'Code Audit',
-            desc: 'Scan code for bottlenecks.',
+            Icon: BoltIcon,
+            title: 'Optimise code',
+            desc: 'Find bottlenecks in a function.',
             prompt: 'Optimize this function for speed and memory efficiency:\n\n```javascript\nfunction processItems(items) {\n  let result = [];\n  for (let i = 0; i < items.length; i++) {\n    if (result.indexOf(items[i]) === -1) result.push(items[i]);\n  }\n  return result;\n}\n```'
           },
           {
-            icon: '🛡️',
-            title: 'Security Scan',
-            desc: 'Find logic vulnerabilities.',
+            Icon: ShieldIcon,
+            title: 'Review security',
+            desc: 'Spot injection and logic flaws.',
             prompt: 'Evaluate this endpoint for security concerns like SQL injection:\n\n```typescript\napp.get("/api/user", async (req, res) => {\n  const user = await db.query(`SELECT * FROM users WHERE id = ${req.query.id}`);\n  res.send(user);\n});\n```'
           },
           {
-            icon: '📝',
-            title: 'Write Tests',
+            Icon: FileTextIcon,
+            title: 'Write tests',
             desc: 'Draft unit test coverage.',
             prompt: 'Write comprehensive Vitest unit tests for this utility function:\n\n```typescript\nexport function formatDate(date: Date, format: string): string {\n  // returns formatted date string\n}\n```'
           },
           {
-            icon: '🐛',
-            title: 'Debug Helper',
-            desc: 'Diagnose runtime errors.',
+            Icon: SearchIcon,
+            title: 'Explain an error',
+            desc: 'Diagnose a runtime exception.',
             prompt: 'Explain this runtime exception and how to resolve it:\n\n"TypeError: Cannot read properties of undefined (reading \'map\') at Dashboard.tsx:42"'
           }
-        ].map((sug, i) => (
+        ].map((sug) => (
           <button
-            key={i}
+            key={sug.title}
             className="tac-suggestion-card"
             type="button"
             onClick={() => sendFn(sug.prompt)}
-            style={{ border: 'none', font: 'inherit' }}
           >
-            <span className="tac-suggestion-icon">{sug.icon}</span>
+            <span className="tac-suggestion-icon">
+              <sug.Icon size={17} />
+            </span>
             <span className="tac-suggestion-title">{sug.title}</span>
             <span className="tac-suggestion-desc">{sug.desc}</span>
           </button>
@@ -390,15 +496,9 @@ function InnerChat({
         <Threads
           threads={threads}
           activeThreadId={activeThread?.id}
-          onSelect={(id) => {
-            switchThread(id);
-            compareAgent.clear();
-          }}
-          onDelete={deleteThread}
-          onCreate={() => {
-            createThread();
-            compareAgent.clear();
-          }}
+          onSelect={handleSelectThread}
+          onDelete={handleDeleteThread}
+          onCreate={handleNewThread}
         />
       )}
 
@@ -426,8 +526,8 @@ function InnerChat({
                   fontFamily: 'var(--tur-font-sans)',
                   cursor: 'pointer',
                   background: 'transparent',
-                  border: '1px solid var(--tur-color-border, #1e1e2e)',
-                  color: 'var(--tur-color-text, #e2e8f0)',
+                  border: '1px solid var(--tur-color-border)',
+                  color: 'var(--tur-color-text)',
                   backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%238b5cf6\' stroke-width=\'2\'%3E%3Cpolyline points=\'6 9 12 15 18 9\'/%3E%3C/svg%3E")',
                   backgroundRepeat: 'no-repeat',
                   backgroundPosition: 'right 8px center',
@@ -436,8 +536,18 @@ function InnerChat({
                 }}
               >
                 {getAllPresets().map((preset) => (
-                  <option key={preset.name} value={preset.name} style={{ background: '#0e1422', color: '#f8fafc' }}>
-                    {preset.icon} {preset.name.charAt(0).toUpperCase() + preset.name.slice(1)}
+                  <option
+                    key={preset.name}
+                    value={preset.name}
+                    // Native dropdown options are painted by the OS, which
+                    // ignores inherited colour — they need the tokens named
+                    // explicitly or they render as black-on-white.
+                    style={{
+                      background: 'var(--tur-color-surface-raised)',
+                      color: 'var(--tur-color-text)',
+                    }}
+                  >
+                    {preset.name.charAt(0).toUpperCase() + preset.name.slice(1)}
                   </option>
                 ))}
               </select>
@@ -458,26 +568,13 @@ function InnerChat({
             {/* Compare Mode Toggle */}
             <button
               type="button"
+              className="tur-btn tur-btn--toggle"
+              aria-pressed={compareMode}
               onClick={() => setCompareMode(!compareMode)}
-              style={{
-                background: compareMode ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
-                color: compareMode ? 'var(--tur-color-accent, #8b5cf6)' : 'var(--tur-color-text-muted, #6b7280)',
-                border: compareMode ? '1px solid var(--tur-color-accent, #8b5cf6)' : '1px solid var(--tur-color-border, #1e1e2e)',
-                borderRadius: 'var(--tur-radius-sm, 8px)',
-                padding: '6px 12px',
-                fontSize: 'var(--tur-font-size-sm, 0.8125rem)',
-                cursor: 'pointer',
-                fontFamily: 'var(--tur-font-sans)',
-                fontWeight: 600,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                transition: 'all 0.2s',
-                boxShadow: compareMode ? '0 0 8px rgba(139, 92, 246, 0.3)' : 'none',
-              }}
               title="Compare side-by-side"
             >
-              <span>📊</span> {compareMode ? 'Split: ON' : 'Compare'}
+              <CompareIcon size={13} />
+              Compare
             </button>
 
             {showStatusIndicator && (
@@ -521,9 +618,9 @@ function InnerChat({
           /* Compare Mode Split Screen View */
           <div style={{ display: 'flex', flex: 1, overflow: 'hidden', minHeight: 0 }}>
             {/* Column A (Left) */}
-            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, borderRight: '1px solid var(--tur-color-border, #1e1e2e)' }}>
-              <div style={{ padding: '8px 16px', borderBottom: '1px solid var(--tur-color-border, #1e1e2e)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255, 255, 255, 0.01)' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--tur-color-accent, #8b5cf6)', fontWeight: 600, fontFamily: 'var(--tur-font-mono, monospace)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, borderRight: '1px solid var(--tur-color-border)' }}>
+              <div style={{ padding: '8px 16px', borderBottom: '1px solid var(--tur-color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255, 255, 255, 0.01)' }}>
+                <span style={{ fontSize: '0.8rem', color: 'var(--tur-color-accent)', fontWeight: 600, fontFamily: 'var(--tur-font-mono, monospace)' }}>
                   A: {activeModel}
                 </span>
                 <ModelSelector
@@ -565,8 +662,8 @@ function InnerChat({
 
             {/* Column B (Right) */}
             <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
-              <div style={{ padding: '8px 16px', borderBottom: '1px solid var(--tur-color-border, #1e1e2e)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255, 255, 255, 0.01)' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--tur-color-accent, #8b5cf6)', fontWeight: 600, fontFamily: 'var(--tur-font-mono, monospace)' }}>
+              <div style={{ padding: '8px 16px', borderBottom: '1px solid var(--tur-color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255, 255, 255, 0.01)' }}>
+                <span style={{ fontSize: '0.8rem', color: 'var(--tur-color-accent)', fontWeight: 600, fontFamily: 'var(--tur-font-mono, monospace)' }}>
                   B: {compareModel}
                 </span>
                 <ModelSelector
@@ -613,16 +710,17 @@ function InnerChat({
           <div
             data-turing="error"
             style={{
-              padding: 'var(--tur-space-sm, 8px) var(--tur-space-lg, 16px)',
-              color: 'var(--tur-color-error, #ff4757)',
-              fontSize: 'var(--tur-font-size-sm, 0.8125rem)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--tur-space-sm)',
+              padding: 'var(--tur-space-sm) var(--tur-space-lg)',
+              fontSize: 'var(--tur-font-size-sm)',
               fontFamily: 'var(--tur-font-mono)',
-              borderTop: '1px solid var(--tur-color-error, #ff4757)',
-              background: 'rgba(255, 71, 87, 0.05)',
             }}
             role="alert"
           >
-            ⚠ {agent.error.message}
+            <WarningIcon size={14} style={{ flexShrink: 0 }} />
+            {agent.error.message}
           </div>
         )}
 
@@ -653,15 +751,28 @@ export function TuringChat(props: TuringChatProps) {
     preset = 'turing',
     systemPrompt,
     temperature,
-    theme = 'vigilante',
+    theme = 'instrument',
     tools,
+    memory,
+    compareModel: initialCompareModel,
+    defaultCompareMode = false,
     ...rest
   } = props;
 
   const [activeModel, setActiveModel] = useState<string>(model);
   const [activePreset, setActivePreset] = useState<string | AgentPreset>(preset);
-  const [compareMode, setCompareMode] = useState<boolean>(false);
-  const [compareModel, setCompareModel] = useState<string>(model);
+  const [compareMode, setCompareMode] = useState<boolean>(defaultCompareMode);
+  const [compareModel, setCompareModel] = useState<string>(initialCompareModel ?? model);
+
+  // Persist to IndexedDB by default so a reload keeps the conversation.
+  // Created once and only in the browser — IndexedDB does not exist during
+  // server rendering, and `false` opts out entirely.
+  const [conversationMemory] = useState<ConversationMemory | undefined>(() => {
+    if (memory === false) return undefined;
+    if (memory) return memory;
+    if (typeof indexedDB === 'undefined') return undefined;
+    return createMemory('indexeddb');
+  });
 
   return (
     <TuringProviderComponent
@@ -688,6 +799,7 @@ export function TuringChat(props: TuringChatProps) {
         setCompareMode={setCompareMode}
         compareModel={compareModel}
         setCompareModel={setCompareModel}
+        conversationMemory={conversationMemory}
         {...rest}
       />
     </TuringProviderComponent>

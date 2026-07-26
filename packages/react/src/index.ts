@@ -33,6 +33,12 @@ export {
   type UseConversationReturn,
 } from './hooks/useConversation';
 
+export {
+  useArena,
+  type UseArenaOptions,
+  type UseArenaReturn,
+} from './hooks/useArena';
+
 // --- UI Components ---------------------------------------------------------
 export {
   TuringChat,
@@ -41,8 +47,31 @@ export {
 
 export {
   MessageBubble,
+  CodeBlock,
+  MAX_HIGHLIGHT_LENGTH,
   type MessageBubbleProps,
+  type CodeBlockProps,
 } from './components/MessageBubble';
+
+// --- Model evaluation ------------------------------------------------------
+export {
+  ModelArena,
+  type ModelArenaProps,
+} from './components/ModelArena';
+
+export {
+  Leaderboard,
+  type LeaderboardProps,
+} from './components/Leaderboard';
+
+export {
+  MetricBadge,
+  MetricRow,
+  formatDuration,
+  formatThroughput,
+  type MetricBadgeProps,
+  type MetricRowProps,
+} from './components/MetricBadge';
 
 export {
   InputBar,
@@ -82,5 +111,20 @@ export type {
   ToolDefinition,
   ExecutableTool,
 } from './types/core';
+
+// Evaluation types come straight from core — the React layer adds no shape of
+// its own, so re-exporting keeps consumers to a single import.
+export type {
+  RunMetrics,
+  ArenaRun,
+  ArenaEntry,
+  ArenaEntryStatus,
+  Vote,
+  ModelStanding,
+  PromptSuite,
+  PromptCase,
+  EvalStore,
+  EvalArchive,
+} from '@turing-chat/core';
 
 export type { TuringContextConfig } from './types/core';

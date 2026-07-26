@@ -2,3 +2,4 @@ export { useTuringAgent, type UseTuringAgentReturn, type UseTuringAgentConfig } 
 export { useMessageStream, type UseMessageStreamReturn } from './useMessageStream';
 export { useModelManager, type UseModelManagerReturn } from './useModelManager';
 export { useConversation, type UseConversationReturn } from './useConversation';
+export { useArena, type UseArenaOptions, type UseArenaReturn } from './useArena';

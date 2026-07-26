@@ -23,18 +23,32 @@ import {
 } from 'react';
 import type { Message, ToolCall } from '@turing-chat/core';
 import ReactMarkdown, { type Components } from 'react-markdown';
-import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
-import oneDark from 'react-syntax-highlighter/dist/cjs/styles/prism/one-dark';
-import ts from 'react-syntax-highlighter/dist/cjs/languages/prism/typescript';
-import js from 'react-syntax-highlighter/dist/cjs/languages/prism/javascript';
-import python from 'react-syntax-highlighter/dist/cjs/languages/prism/python';
-import bash from 'react-syntax-highlighter/dist/cjs/languages/prism/bash';
-import css from 'react-syntax-highlighter/dist/cjs/languages/prism/css';
-import markup from 'react-syntax-highlighter/dist/cjs/languages/prism/markup';
-import json from 'react-syntax-highlighter/dist/cjs/languages/prism/json';
-import markdown from 'react-syntax-highlighter/dist/cjs/languages/prism/markdown';
-import sql from 'react-syntax-highlighter/dist/cjs/languages/prism/sql';
-import cpp from 'react-syntax-highlighter/dist/cjs/languages/prism/cpp';
+import remarkGfm from 'remark-gfm';
+
+import { BoltIcon, CheckIcon, ChevronIcon, CopyIcon, PlayIcon } from './icons';
+
+// Imported from the ESM builds rather than the package root: `PrismLight`
+// ships no languages until they are registered, and the per-language ESM
+// entries let bundlers drop the ones we never register. See
+// src/types/syntax-highlighter.d.ts for why these subpaths need declarations.
+import SyntaxHighlighter from 'react-syntax-highlighter/dist/esm/prism-light';
+import oneDark from 'react-syntax-highlighter/dist/esm/styles/prism/one-dark';
+import ts from 'react-syntax-highlighter/dist/esm/languages/prism/typescript';
+import js from 'react-syntax-highlighter/dist/esm/languages/prism/javascript';
+import jsx from 'react-syntax-highlighter/dist/esm/languages/prism/jsx';
+import tsx from 'react-syntax-highlighter/dist/esm/languages/prism/tsx';
+import python from 'react-syntax-highlighter/dist/esm/languages/prism/python';
+import bash from 'react-syntax-highlighter/dist/esm/languages/prism/bash';
+import css from 'react-syntax-highlighter/dist/esm/languages/prism/css';
+import markup from 'react-syntax-highlighter/dist/esm/languages/prism/markup';
+import json from 'react-syntax-highlighter/dist/esm/languages/prism/json';
+import markdown from 'react-syntax-highlighter/dist/esm/languages/prism/markdown';
+import sql from 'react-syntax-highlighter/dist/esm/languages/prism/sql';
+import cpp from 'react-syntax-highlighter/dist/esm/languages/prism/cpp';
+import rust from 'react-syntax-highlighter/dist/esm/languages/prism/rust';
+import go from 'react-syntax-highlighter/dist/esm/languages/prism/go';
+import yaml from 'react-syntax-highlighter/dist/esm/languages/prism/yaml';
+import diff from 'react-syntax-highlighter/dist/esm/languages/prism/diff';
 
 // Register common languages
 SyntaxHighlighter.registerLanguage('typescript', ts);
@@ -55,6 +69,14 @@ SyntaxHighlighter.registerLanguage('md', markdown);
 SyntaxHighlighter.registerLanguage('sql', sql);
 SyntaxHighlighter.registerLanguage('cpp', cpp);
 SyntaxHighlighter.registerLanguage('c++', cpp);
+SyntaxHighlighter.registerLanguage('jsx', jsx);
+SyntaxHighlighter.registerLanguage('tsx', tsx);
+SyntaxHighlighter.registerLanguage('rust', rust);
+SyntaxHighlighter.registerLanguage('rs', rust);
+SyntaxHighlighter.registerLanguage('go', go);
+SyntaxHighlighter.registerLanguage('yaml', yaml);
+SyntaxHighlighter.registerLanguage('yml', yaml);
+SyntaxHighlighter.registerLanguage('diff', diff);
 
 function formatTextWithBreaks(node: ReactNode): ReactNode {
   if (typeof node === 'string') {
@@ -106,13 +128,48 @@ export interface MessageBubbleProps {
 // Markdown Components
 // ────────────────────────────────────────────────────────────────────────────
 
-interface CodeBlockProps {
+/**
+ * Longest source we will syntax-highlight, in characters.
+ *
+ * Prism tokenises synchronously on the main thread, and cost grows with input
+ * size. Around 40k characters — roughly 1,500 lines, far longer than any
+ * readable chat reply — the pause becomes visible, and during streaming the
+ * block is re-tokenised on every token, so the cost compounds. Past this
+ * threshold the source is shown as plain text: still readable, still
+ * copyable, but never janky.
+ */
+export const MAX_HIGHLIGHT_LENGTH = 40_000;
+
+/** Shared surface styling so highlighted and plain blocks look identical. */
+const codeSurfaceStyle: CSSProperties = {
+  margin: 0,
+  padding: 'var(--tur-space-md, 12px)',
+  fontSize: 'var(--tur-font-size-sm)',
+  fontFamily: 'var(--tur-font-mono)',
+  background: 'transparent',
+  overflowX: 'auto',
+  lineHeight: 'var(--tur-line-height-relaxed, 1.8)',
+  whiteSpace: 'pre',
+};
+
+/** Props for the {@link CodeBlock} component. */
+export interface CodeBlockProps {
+  /** Language tag from the fence, when the author supplied one. */
   language?: string;
-  codeContent: any;
+  /** The raw source to display. */
+  code: string;
 }
 
-export function CodeBlock({ language, codeContent }: CodeBlockProps) {
+/** A fenced code block with a language label and a copy button. */
+export const CodeBlock = memo(function CodeBlock({
+  language,
+  code: codeContent,
+}: CodeBlockProps) {
   const [copied, setCopied] = useState(false);
+
+  // Trailing newline from the fence is dropped so the block does not render an
+  // empty final line.
+  const source = useMemo(() => String(codeContent).replace(/\n$/, ''), [codeContent]);
 
   const handleCopy = useCallback(async () => {
     const textToCopy = String(codeContent).replace(/\n+$/, '');
@@ -194,27 +251,24 @@ export function CodeBlock({ language, codeContent }: CodeBlockProps) {
           <span>{copied ? 'Copied!' : 'Copy'}</span>
         </button>
       </div>
-      <SyntaxHighlighter
-        language={language}
-        style={oneDark}
-        customStyle={{
-          margin: 0,
-          padding: 'var(--tur-space-md, 12px)',
-          fontSize: 'var(--tur-font-size-sm)',
-          fontFamily: 'var(--tur-font-mono)',
-          background: 'transparent',
-          overflowX: 'auto',
-          lineHeight: 'var(--tur-line-height-relaxed, 1.8)',
-          whiteSpace: 'pre',
-        }}
-        PreTag="pre"
-        CodeTag="code"
-      >
-        {String(codeContent).replace(/\n$/, '')}
-      </SyntaxHighlighter>
+      {source.length > MAX_HIGHLIGHT_LENGTH ? (
+        <pre style={{ ...codeSurfaceStyle, color: 'var(--tur-code-text)' }}>
+          <code className={language ? `language-${language}` : undefined}>{source}</code>
+        </pre>
+      ) : (
+        <SyntaxHighlighter
+          language={language}
+          style={oneDark}
+          customStyle={codeSurfaceStyle}
+          PreTag="pre"
+          CodeTag="code"
+        >
+          {source}
+        </SyntaxHighlighter>
+      )}
     </div>
   );
-}
+});
 
 const markdownComponents: Components = {
   p({ node, children, ...props }: any) {
@@ -241,39 +295,33 @@ const markdownComponents: Components = {
       </strong>
     );
   },
-  pre({ children }: any) {
-    const codeChild = Children.toArray(children).find(
-      (child) => isValidElement(child)
-    );
-    let language: string | undefined;
-    let codeContent: any = '';
-    if (codeChild && isValidElement(codeChild)) {
-      const className = (codeChild.props as any).className || '';
-      const match = /language-([^\s]+)/.exec(className);
-      language = match ? match[1] : undefined;
-      codeContent = (codeChild.props as any).children;
-    } else {
-      codeContent = children;
+  // Fenced blocks are read straight from the markdown AST rather than from
+  // rendered children. Inspecting rendered output means guessing at whatever
+  // the `code` override happened to return, which breaks as soon as that
+  // override changes; the AST always carries the fence language and the exact
+  // source text.
+  pre({ node, children }: any) {
+    const codeNode = node?.children?.find((child: any) => child.tagName === 'code');
+    if (!codeNode) {
+      return <pre>{children}</pre>;
     }
 
-    return <CodeBlock language={language} codeContent={codeContent} />;
+    const rawClass = codeNode.properties?.className;
+    const classNames = Array.isArray(rawClass) ? rawClass.join(' ') : String(rawClass ?? '');
+    const match = /language-(\S+)/.exec(classNames);
+
+    const source = (codeNode.children ?? [])
+      .map((child: any) => child.value ?? '')
+      .join('');
+
+    return <CodeBlock language={match?.[1]} code={source} />;
   },
+  // Only inline code reaches this override — fenced blocks are intercepted by
+  // `pre` above, which never renders its children.
   code({ node, className, children, ...props }: any) {
-    const match = /language-([^\s]+)/.exec(className || '');
-    if (match) {
-      return (
-        <SyntaxHighlighter
-          language={match[1]}
-          style={oneDark}
-          PreTag="pre"
-          CodeTag="code"
-        >
-          {String(children).replace(/\n$/, '')}
-        </SyntaxHighlighter>
-      );
-    }
     return (
       <code
+        className={className}
         style={{
           background: 'var(--tur-code-bg)',
           padding: '2px 6px',
@@ -342,6 +390,106 @@ const markdownComponents: Components = {
       </li>
     );
   },
+
+  // ── GFM elements ────────────────────────────────────────────────────────
+  // The table is wrapped in its own scroll container so a wide table scrolls
+  // inside the bubble rather than stretching the whole conversation.
+  table({ node, children, ...props }: any) {
+    return (
+      <div
+        data-turing="table-scroll"
+        style={{ overflowX: 'auto', maxWidth: '100%', margin: 'var(--tur-space-sm, 8px) 0' }}
+      >
+        <table
+          style={{
+            borderCollapse: 'collapse',
+            width: '100%',
+            fontSize: '0.9375em',
+          }}
+          {...props}
+        >
+          {children}
+        </table>
+      </div>
+    );
+  },
+  thead({ node, children, ...props }: any) {
+    return (
+      <thead style={{ background: 'var(--tur-code-bg)' }} {...props}>
+        {children}
+      </thead>
+    );
+  },
+  th({ node, children, ...props }: any) {
+    return (
+      <th
+        style={{
+          border: '1px solid var(--tur-color-border)',
+          padding: '6px 10px',
+          textAlign: 'left',
+          fontWeight: 'var(--tur-font-weight-semibold, 600)',
+        }}
+        {...props}
+      >
+        {children}
+      </th>
+    );
+  },
+  td({ node, children, ...props }: any) {
+    return (
+      <td
+        style={{ border: '1px solid var(--tur-color-border)', padding: '6px 10px' }}
+        {...props}
+      >
+        {children}
+      </td>
+    );
+  },
+  del({ node, children, ...props }: any) {
+    return (
+      <del style={{ opacity: 0.65 }} {...props}>
+        {children}
+      </del>
+    );
+  },
+  input({ node, ...props }: any) {
+    // GFM task-list checkboxes. They stay disabled — a rendered message is a
+    // transcript, not a form.
+    return (
+      <input
+        style={{ marginRight: 6, accentColor: 'var(--tur-color-accent)' }}
+        {...props}
+        disabled
+      />
+    );
+  },
+  blockquote({ node, children, ...props }: any) {
+    return (
+      <blockquote
+        style={{
+          borderLeft: '3px solid var(--tur-color-accent)',
+          margin: 'var(--tur-space-sm, 8px) 0',
+          padding: '2px 0 2px var(--tur-space-md, 12px)',
+          color: 'var(--tur-color-text-muted)',
+        }}
+        {...props}
+      >
+        {children}
+      </blockquote>
+    );
+  },
+  hr({ node, ...props }: any) {
+    return (
+      <hr
+        style={{
+          border: 'none',
+          borderTop: '1px solid var(--tur-color-border)',
+          margin: 'var(--tur-space-md, 12px) 0',
+        }}
+        {...props}
+      />
+    );
+  },
 };
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -379,18 +527,17 @@ const bubbleBaseStyle: CSSProperties = {
   overflowX: 'auto',
 };
 
+// Corner treatment is left entirely to the theme. The previous version set a
+// squared corner here and the stylesheet then squared a *different* corner with
+// `!important`, so the two fought each other on every render.
 const userBubbleStyle: CSSProperties = {
   ...bubbleBaseStyle,
-  background: 'var(--tur-msg-user-bg)',
   color: 'var(--tur-msg-user-text)',
-  borderBottomRightRadius: 'var(--tur-radius-sm, 8px)',
 };
 
 const assistantBubbleStyle: CSSProperties = {
   ...bubbleBaseStyle,
-  background: 'var(--tur-msg-assistant-bg)',
   color: 'var(--tur-msg-assistant-text)',
-  borderBottomLeftRadius: 'var(--tur-radius-sm, 8px)',
 };
 
 const roleLabelStyle: CSSProperties = {
@@ -405,19 +552,15 @@ const roleLabelStyle: CSSProperties = {
 
 const timestampStyle: CSSProperties = {
   fontSize: 'var(--tur-font-size-xs, 0.6875rem)',
-  fontFamily: 'var(--tur-font-sans)',
+  fontFamily: 'var(--tur-font-mono)',
   color: 'var(--tur-color-text-muted)',
-  marginTop: 'var(--tur-space-xs, 4px)',
-  opacity: 0.7,
+  fontVariantNumeric: 'tabular-nums',
 };
 
+// Placed in the footer row beside the timestamp rather than floated over the
+// bubble, where it used to sit on top of the first line of the message.
 const copyBtnStyle: CSSProperties = {
-  position: 'absolute',
-  top: 'var(--tur-space-sm, 8px)',
-  right: 'var(--tur-space-sm, 8px)',
-  padding: '4px 6px',
-  borderRadius: 'var(--tur-radius-sm, 8px)',
-  border: 'none',
+  padding: '3px 5px',
   cursor: 'pointer',
   fontSize: 'var(--tur-font-size-xs, 0.6875rem)',
   fontFamily: 'var(--tur-font-mono)',
@@ -426,31 +569,6 @@ const copyBtnStyle: CSSProperties = {
   justifyContent: 'center',
   transition: 'opacity var(--tur-transition-fast)',
 };
-
-// ────────────────────────────────────────────────────────────────────────────
-// Copy/Check icons
-// ────────────────────────────────────────────────────────────────────────────
-
-function CopyIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="2" strokeLinecap="round"
-      strokeLinejoin="round" aria-hidden="true">
-      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="2" strokeLinecap="round"
-      strokeLinejoin="round" aria-hidden="true">
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  );
-}
 
 // ────────────────────────────────────────────────────────────────────────────
 // Tool Invocation Console Sub-component
@@ -490,131 +608,133 @@ export function ToolInvocationConsole({
     onDecline?.(messageId, toolCall.id);
   };
 
-  // Determine status label and badge color
+  // Status drives both the label and the badge palette, which the theme
+  // supplies via `.tur-badge[data-state]`.
   let status = 'PENDING';
-  let badgeColor = 'var(--tur-color-accent, #8b5cf6)'; // violet
+  let badgeState: 'pending' | 'streaming' | 'success' | 'error' | 'neutral' = 'pending';
 
   if (hasResult) {
     if (resultString.startsWith('Error:')) {
       status = 'FAILED';
-      badgeColor = 'var(--tur-color-error, #ef4444)';
+      badgeState = 'error';
     } else if (resultString.toLowerCase().includes('declined')) {
       status = 'DECLINED';
-      badgeColor = 'var(--tur-color-text-muted, #6b7280)';
+      badgeState = 'neutral';
     } else {
       status = 'COMPLETED';
-      badgeColor = '#10b981'; // green
+      badgeState = 'success';
     }
   } else if (isRunning) {
     status = 'RUNNING';
-    badgeColor = '#eab308'; // yellow
+    badgeState = 'streaming';
   }
 
   return (
     <div
       className="tac-terminal-console"
       style={{
-        border: '1px solid var(--tur-color-border, #1e1e2e)',
-        background: '#090d16',
-        borderRadius: 'var(--tur-radius-sm, 8px)',
-        margin: '12px 0',
-        fontFamily: 'var(--tur-font-mono, monospace)',
-        fontSize: 'var(--tur-font-size-xs, 0.75rem)',
-        overflow: 'hidden',
+        margin: 'var(--tur-space-md, 12px) 0',
+        fontFamily: 'var(--tur-font-mono)',
+        fontSize: 'var(--tur-font-size-xs)',
         width: '100%',
         maxWidth: '100%',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25)',
       }}
     >
       {/* Header */}
-      <div
+      <button
+        type="button"
         className="tac-terminal-header"
         onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
         style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          padding: '8px 12px',
-          background: '#0e1422',
-          borderBottom: '1px solid var(--tur-color-border, #1e1e2e)',
+          gap: 'var(--tur-space-sm)',
+          padding: 'var(--tur-space-sm) var(--tur-space-md)',
           cursor: 'pointer',
           userSelect: 'none',
+          width: '100%',
+          font: 'inherit',
+          textAlign: 'left',
+          border: 'none',
+          background: 'transparent',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#e2e8f0' }}>
-          <span style={{ fontSize: 10 }}>⚡</span>
-          <span style={{ fontWeight: 600, color: 'var(--tur-color-accent)' }}>{toolCall.name}</span>
+        <span
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--tur-space-sm)',
+            color: 'var(--tur-color-text)',
+            minWidth: 0,
+          }}
+        >
+          <BoltIcon size={13} style={{ color: 'var(--tur-color-accent)', flexShrink: 0 }} />
           <span
             style={{
-              fontSize: '9px',
-              padding: '2px 6px',
-              borderRadius: '4px',
-              background: `rgba(${status === 'COMPLETED' ? '16,185,129' : status === 'FAILED' ? '239,68,68' : '139,92,246'}, 0.1)`,
-              color: badgeColor,
-              fontWeight: 600,
-              border: `1px solid rgba(${status === 'COMPLETED' ? '16,185,129' : status === 'FAILED' ? '239,68,68' : '139,92,246'}, 0.2)`
+              fontWeight: 'var(--tur-font-weight-semibold)' as never,
+              color: 'var(--tur-color-accent)',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
             }}
           >
+            {toolCall.name}
+          </span>
+          <span className="tur-badge" data-state={badgeState}>
             {status}
           </span>
-        </div>
-        <div style={{ color: 'var(--tur-color-text-muted)', fontSize: 10 }}>
-          {isOpen ? '▲' : '▼'}
-        </div>
-      </div>
+        </span>
+        <ChevronIcon
+          size={14}
+          direction={isOpen ? 'up' : 'down'}
+          style={{ color: 'var(--tur-color-text-muted)', flexShrink: 0 }}
+        />
+      </button>
 
       {/* Content */}
       {isOpen && (
-        <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div
+          style={{
+            padding: 'var(--tur-space-md)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 'var(--tur-space-md)',
+          }}
+        >
           {/* Arguments Section */}
           <div>
-            <div style={{ color: 'var(--tur-color-text-muted)', marginBottom: 4 }}>// Input arguments:</div>
-            <pre style={{ margin: 0, padding: '8px 12px', background: '#0b0f19', borderRadius: 4, color: '#a7f3d0', overflowX: 'auto', whiteSpace: 'pre-wrap' }}>
+            <div className="tur-label" style={{ marginBottom: 'var(--tur-space-xs)' }}>
+              Input
+            </div>
+            <pre
+              className="tac-terminal-pre"
+              style={{
+                margin: 0,
+                padding: 'var(--tur-space-sm) var(--tur-space-md)',
+                overflowX: 'auto',
+                whiteSpace: 'pre-wrap',
+              }}
+            >
               {argumentsString}
             </pre>
           </div>
 
           {/* Action buttons (Pending Execution) */}
           {!hasResult && !isRunning && (
-            <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+            <div style={{ display: 'flex', gap: 'var(--tur-space-sm)' }}>
               <button
                 type="button"
-                className="tac-btn-approve"
+                className="tur-btn tur-btn--primary"
                 onClick={handleRun}
-                style={{
-                  background: 'var(--tur-color-accent, #8b5cf6)',
-                  color: '#ffffff',
-                  border: 'none',
-                  borderRadius: 4,
-                  padding: '6px 12px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  fontFamily: 'var(--tur-font-sans)',
-                  fontSize: '11px',
-                  transition: 'opacity 0.2s',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 4
-                }}
               >
-                <span>▶</span> Run Tool
+                <PlayIcon size={12} />
+                Run tool
               </button>
               <button
                 type="button"
-                className="tac-btn-decline"
+                className="tur-btn tur-btn--ghost"
                 onClick={handleDecline}
-                style={{
-                  background: 'transparent',
-                  color: 'var(--tur-color-text-muted)',
-                  border: '1px solid var(--tur-color-border)',
-                  borderRadius: 4,
-                  padding: '6px 12px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  fontFamily: 'var(--tur-font-sans)',
-                  fontSize: '11px',
-                  transition: 'background 0.2s'
-                }}
               >
                 Decline
               </button>
@@ -623,17 +743,53 @@ export function ToolInvocationConsole({
 
           {/* Running status indicator */}
           {isRunning && (
-            <div style={{ color: '#eab308', display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span className="tac-console-spinner" style={{ display: 'inline-block', width: 10, height: 10, border: '2px solid #eab308', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-              Executing script on local system...
+            <div
+              style={{
+                color: 'var(--tur-color-warning)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--tur-space-sm)',
+              }}
+            >
+              <span
+                className="tac-console-spinner"
+                style={{
+                  display: 'inline-block',
+                  width: 10,
+                  height: 10,
+                  border: '2px solid currentColor',
+                  borderTopColor: 'transparent',
+                  borderRadius: '50%',
+                }}
+              />
+              Executing on this device…
             </div>
           )}
 
           {/* Result Output Section */}
           {hasResult && (
-            <div style={{ borderTop: '1px solid #141b2c', paddingTop: 10 }}>
-              <div style={{ color: 'var(--tur-color-text-muted)', marginBottom: 4 }}>// Output result:</div>
-              <pre style={{ margin: 0, padding: '8px 12px', background: '#0b0f19', borderRadius: 4, color: status === 'FAILED' ? '#fca5a5' : '#93c5fd', overflowX: 'auto', whiteSpace: 'pre-wrap' }}>
+            <div
+              style={{
+                borderTop: '1px solid var(--tur-color-border)',
+                paddingTop: 'var(--tur-space-md)',
+              }}
+            >
+              <div className="tur-label" style={{ marginBottom: 'var(--tur-space-xs)' }}>
+                Output
+              </div>
+              <pre
+                className="tac-terminal-pre"
+                style={{
+                  margin: 0,
+                  padding: 'var(--tur-space-sm) var(--tur-space-md)',
+                  color:
+                    status === 'FAILED'
+                      ? 'var(--tur-color-error)'
+                      : 'var(--tur-color-info)',
+                  overflowX: 'auto',
+                  whiteSpace: 'pre-wrap',
+                }}
+              >
                 {resultString}
               </pre>
             </div>
@@ -667,7 +823,7 @@ export const MessageBubble = memo(function MessageBubble({
 
   const renderedContent = useMemo(
     () => (
-      <ReactMarkdown components={markdownComponents}>
+      <ReactMarkdown components={markdownComponents} remarkPlugins={[remarkGfm]}>
         {message.content}
       </ReactMarkdown>
     ),
@@ -737,6 +893,7 @@ export const MessageBubble = memo(function MessageBubble({
       )}
 
       <div
+        data-turing="bubble"
         style={isUser ? userBubbleStyle : assistantBubbleStyle}
         role="article"
         aria-label={`${message.role} message`}
@@ -762,29 +919,41 @@ export const MessageBubble = memo(function MessageBubble({
         {isStreaming && !isUser && (
           <span data-turing="cursor" aria-hidden="true" />
         )}
-
-        {/* Copy button */}
-        {message.content.length > 0 && (
-          <button
-            data-turing="copy-btn"
-            style={copyBtnStyle}
-            onClick={handleCopy}
-            aria-label={copied ? 'Copied!' : 'Copy message'}
-            title={copied ? 'Copied!' : 'Copy to clipboard'}
-            type="button"
-          >
-            {copied ? <CheckIcon /> : <CopyIcon />}
-          </button>
-        )}
       </div>
 
-      {showTimestamp && formattedTime && (
-        <time
-          style={timestampStyle}
-          dateTime={new Date(message.timestamp).toISOString()}
+      {/* Footer: timestamp and copy, below the bubble rather than over it. */}
+      {(showTimestamp || message.content.length > 0) && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--tur-space-sm)',
+            marginTop: 'var(--tur-space-xs)',
+            minHeight: 20,
+          }}
         >
-          {formattedTime}
-        </time>
+          {showTimestamp && formattedTime && (
+            <time
+              style={timestampStyle}
+              dateTime={new Date(message.timestamp).toISOString()}
+            >
+              {formattedTime}
+            </time>
+          )}
+
+          {message.content.length > 0 && (
+            <button
+              data-turing="copy-btn"
+              style={copyBtnStyle}
+              onClick={handleCopy}
+              aria-label={copied ? 'Copied' : 'Copy message'}
+              title={copied ? 'Copied' : 'Copy to clipboard'}
+              type="button"
+            >
+              {copied ? <CheckIcon size={13} /> : <CopyIcon size={13} />}
+            </button>
+          )}
+        </div>
       )}
     </div>
   );

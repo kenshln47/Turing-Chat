@@ -1,0 +1,655 @@
+/* ============================================================================
+ * Turing Chat — Instrument
+ *
+ * The product is a measuring device: it runs the same prompt through several
+ * models and reports what happened. The interface is built to match — printed
+ * reference material and a panel of readouts, not a chat app.
+ *
+ * Three decisions carry the identity:
+ *
+ *   Paper, not a void.        Warm off-white with black ink. Comparison work
+ *                             is reading work, and reading happens on paper.
+ *   Vermilion, not violet.    A single hot signal colour, used only where the
+ *                             interface is speaking to you.
+ *   Rules, not shadows.       Hairlines and alignment do the structural work.
+ *                             Nothing glows, blurs, or floats.
+ *
+ * A dark scheme follows automatically, and can be pinned with
+ * `data-turing-scheme="light" | "dark"`.
+ * ========================================================================== */
+
+@import './variables.css';
+
+/* ──── Light: paper ─────────────────────────────────────────────────────── */
+
+[data-turing-theme='instrument'] {
+  color-scheme: light;
+
+  /* Surfaces. Warm greys throughout — a neutral grey next to warm paper
+     reads as dirty, so every step keeps the same yellow cast. */
+  --tur-color-bg: #fbf8f1;
+  --tur-color-bg-secondary: #f5f0e4;
+  --tur-color-bg-tertiary: #efe8d8;
+  --tur-color-surface: #fffdf8;
+  --tur-color-surface-raised: #fffefb;
+  --tur-color-surface-hover: rgba(23, 20, 15, 0.045);
+
+  /* Ink. Never pure black: #000 on warm paper looks like a hole punched
+     through it. */
+  --tur-color-text: #17140f;
+  --tur-color-text-secondary: #55503f;
+  --tur-color-text-muted: #8a8271;
+  --tur-color-text-inverse: #fffdf8;
+
+  /* Signal. */
+  --tur-color-accent: #bf3b12;
+  --tur-color-accent-hover: #9c2f0c;
+  --tur-color-accent-subtle: rgba(191, 59, 18, 0.09);
+  --tur-color-accent-text: #fffdf8;
+
+  /* Rules. */
+  --tur-color-border: #e3dbc7;
+  --tur-color-border-strong: #cdc2a6;
+  --tur-color-border-focus: var(--tur-color-accent);
+
+  /* Readings. Each status is a distinct hue from the signal colour, so a
+     green "fastest" is never mistaken for the accent. */
+  --tur-color-success: #1f6f43;
+  --tur-color-success-subtle: rgba(31, 111, 67, 0.1);
+  --tur-color-warning: #96600a;
+  --tur-color-warning-subtle: rgba(150, 96, 10, 0.11);
+  --tur-color-error: #a11c1c;
+  --tur-color-error-subtle: rgba(161, 28, 28, 0.08);
+  --tur-color-info: #1f4e79;
+  --tur-color-info-subtle: rgba(31, 78, 121, 0.1);
+  --tur-color-neutral: #7c7466;
+  --tur-color-neutral-subtle: rgba(124, 116, 102, 0.1);
+
+  /* Elevation is almost nothing. Paper lies flat. */
+  --tur-shadow-sm: 0 1px 0 rgba(23, 20, 15, 0.04);
+  --tur-shadow-md: 0 1px 2px rgba(23, 20, 15, 0.06);
+  --tur-shadow-lg: 0 4px 14px rgba(23, 20, 15, 0.08);
+  --tur-shadow-xl: 0 12px 32px rgba(23, 20, 15, 0.1);
+  --tur-ring-accent: 0 0 0 2px rgba(191, 59, 18, 0.2);
+
+  /* Messages. The speaker is marked with a rule in the margin, the way a
+     reader annotates a page — no coloured bubbles. */
+  --tur-msg-user-bg: #f5f0e4;
+  --tur-msg-user-text: var(--tur-color-text);
+  --tur-msg-user-border: #e3dbc7;
+  --tur-msg-assistant-bg: #fffdf8;
+  --tur-msg-assistant-text: var(--tur-color-text);
+  --tur-msg-assistant-border: #e3dbc7;
+
+  --tur-input-bg: #fffdf8;
+  --tur-input-border: #cdc2a6;
+  --tur-input-text: var(--tur-color-text);
+  --tur-input-placeholder: #9e957f;
+
+  --tur-code-bg: #f7f2e6;
+  --tur-code-text: #17140f;
+  --tur-code-header-bg: #efe8d8;
+
+  --tur-scrollbar-thumb: #cdc2a6;
+  --tur-scrollbar-track: transparent;
+}
+
+/* ──── Dark: darkroom ─────────────────────────────────────────────────────
+ * The same paper, under a safelight. Browns and umbers rather than the blue
+ * blacks every other dark interface uses, so the identity survives the switch.
+ */
+
+@media (prefers-color-scheme: dark) {
+  [data-turing-theme='instrument']:not([data-turing-scheme='light']) {
+    color-scheme: dark;
+
+    --tur-color-bg: #15130e;
+    --tur-color-bg-secondary: #1d1a13;
+    --tur-color-bg-tertiary: #26221a;
+    --tur-color-surface: #1a1711;
+    --tur-color-surface-raised: #221e16;
+    --tur-color-surface-hover: rgba(237, 231, 217, 0.06);
+
+    --tur-color-text: #ece5d6;
+    --tur-color-text-secondary: #a99e88;
+    --tur-color-text-muted: #7b7263;
+    --tur-color-text-inverse: #15130e;
+
+    --tur-color-accent: #e8613a;
+    --tur-color-accent-hover: #f4794f;
+    --tur-color-accent-subtle: rgba(232, 97, 58, 0.14);
+    --tur-color-accent-text: #15130e;
+
+    --tur-color-border: #2e2920;
+    --tur-color-border-strong: #453f32;
+
+    --tur-color-success: #56b380;
+    --tur-color-success-subtle: rgba(86, 179, 128, 0.14);
+    --tur-color-warning: #d5a03c;
+    --tur-color-warning-subtle: rgba(213, 160, 60, 0.14);
+    --tur-color-error: #e07a6a;
+    --tur-color-error-subtle: rgba(224, 122, 106, 0.13);
+    --tur-color-info: #77a8d4;
+    --tur-color-info-subtle: rgba(119, 168, 212, 0.13);
+    --tur-color-neutral: #857c6c;
+    --tur-color-neutral-subtle: rgba(133, 124, 108, 0.14);
+
+    --tur-shadow-sm: 0 1px 0 rgba(0, 0, 0, 0.4);
+    --tur-shadow-md: 0 1px 3px rgba(0, 0, 0, 0.5);
+    --tur-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.55);
+    --tur-shadow-xl: 0 14px 40px rgba(0, 0, 0, 0.6);
+    --tur-ring-accent: 0 0 0 2px rgba(232, 97, 58, 0.3);
+
+    --tur-msg-user-bg: #221e16;
+    --tur-msg-user-border: #35301f;
+    --tur-msg-assistant-bg: #1a1711;
+    --tur-msg-assistant-border: #2e2920;
+
+    --tur-input-bg: #1a1711;
+    --tur-input-border: #453f32;
+    --tur-input-placeholder: #6d6455;
+
+    --tur-code-bg: #100e0a;
+    --tur-code-text: #ece5d6;
+    --tur-code-header-bg: #221e16;
+
+    --tur-scrollbar-thumb: #453f32;
+  }
+}
+
+/* Explicit dark, ignoring the system preference. Duplicated rather than
+   shared because CSS cannot union a media query with an attribute selector. */
+[data-turing-theme='instrument'][data-turing-scheme='dark'] {
+  color-scheme: dark;
+
+  --tur-color-bg: #15130e;
+  --tur-color-bg-secondary: #1d1a13;
+  --tur-color-bg-tertiary: #26221a;
+  --tur-color-surface: #1a1711;
+  --tur-color-surface-raised: #221e16;
+  --tur-color-surface-hover: rgba(237, 231, 217, 0.06);
+
+  --tur-color-text: #ece5d6;
+  --tur-color-text-secondary: #a99e88;
+  --tur-color-text-muted: #7b7263;
+  --tur-color-text-inverse: #15130e;
+
+  --tur-color-accent: #e8613a;
+  --tur-color-accent-hover: #f4794f;
+  --tur-color-accent-subtle: rgba(232, 97, 58, 0.14);
+  --tur-color-accent-text: #15130e;
+
+  --tur-color-border: #2e2920;
+  --tur-color-border-strong: #453f32;
+
+  --tur-color-success: #56b380;
+  --tur-color-success-subtle: rgba(86, 179, 128, 0.14);
+  --tur-color-warning: #d5a03c;
+  --tur-color-warning-subtle: rgba(213, 160, 60, 0.14);
+  --tur-color-error: #e07a6a;
+  --tur-color-error-subtle: rgba(224, 122, 106, 0.13);
+  --tur-color-info: #77a8d4;
+  --tur-color-info-subtle: rgba(119, 168, 212, 0.13);
+  --tur-color-neutral: #857c6c;
+  --tur-color-neutral-subtle: rgba(133, 124, 108, 0.14);
+
+  --tur-shadow-sm: 0 1px 0 rgba(0, 0, 0, 0.4);
+  --tur-shadow-md: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --tur-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.55);
+  --tur-shadow-xl: 0 14px 40px rgba(0, 0, 0, 0.6);
+  --tur-ring-accent: 0 0 0 2px rgba(232, 97, 58, 0.3);
+
+  --tur-msg-user-bg: #221e16;
+  --tur-msg-user-border: #35301f;
+  --tur-msg-assistant-bg: #1a1711;
+  --tur-msg-assistant-border: #2e2920;
+
+  --tur-input-bg: #1a1711;
+  --tur-input-border: #453f32;
+  --tur-input-placeholder: #6d6455;
+
+  --tur-code-bg: #100e0a;
+  --tur-code-text: #ece5d6;
+  --tur-code-header-bg: #221e16;
+
+  --tur-scrollbar-thumb: #453f32;
+}
+
+/* ============================================================================
+ * Motion — used only where something is genuinely changing
+ * ========================================================================== */
+
+@keyframes tur-enter {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes tur-caret {
+  0%, 45%   { opacity: 1; }
+  55%, 100% { opacity: 0; }
+}
+
+@keyframes tur-breathe {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.3; }
+}
+
+@keyframes tur-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================================
+ * Containers
+ * ========================================================================== */
+
+[data-turing-theme='instrument'] [data-turing='chat'],
+[data-turing-theme='instrument'][data-turing='arena'] {
+  background: var(--tur-color-bg);
+  color: var(--tur-color-text);
+  border-color: var(--tur-color-border-strong);
+  box-shadow: var(--tur-shadow-md);
+}
+
+/* ============================================================================
+ * Messages — margin rules, not bubbles
+ * ========================================================================== */
+
+[data-turing-theme='instrument'] [data-turing='message'] {
+  animation: tur-enter var(--tur-transition-base) ease-out;
+}
+
+[data-turing-theme='instrument'] [data-turing='bubble'] {
+  background: var(--tur-msg-assistant-bg);
+  border: 1px solid var(--tur-msg-assistant-border);
+  border-radius: var(--tur-radius-md);
+}
+
+[data-turing-theme='instrument']
+  [data-turing='message'][data-role='user']
+  [data-turing='bubble'] {
+  background: var(--tur-msg-user-bg);
+  border-color: var(--tur-msg-user-border);
+}
+
+/* The assistant is marked in the margin. */
+[data-turing-theme='instrument']
+  [data-turing='message'][data-role='assistant']
+  [data-turing='bubble'] {
+  border-left: 2px solid var(--tur-color-accent);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+/* The role label is set like a running head. */
+[data-turing-theme='instrument'] [data-turing='message'] > span:first-child {
+  font-family: var(--tur-font-mono);
+  font-size: var(--tur-font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tur-tracking-label);
+  color: var(--tur-color-text-muted);
+}
+
+/* Prose inside a message reads in the serif; code and data stay mono. */
+[data-turing-theme='instrument'] [data-turing='bubble'] p,
+[data-turing-theme='instrument'] [data-turing='bubble'] li {
+  font-family: var(--tur-font-serif);
+  font-size: 1.0625rem;
+  line-height: var(--tur-line-height-relaxed);
+}
+
+[data-turing-theme='instrument'] [data-turing='bubble'] h1,
+[data-turing-theme='instrument'] [data-turing='bubble'] h2,
+[data-turing-theme='instrument'] [data-turing='bubble'] h3 {
+  font-family: var(--tur-font-serif);
+  letter-spacing: var(--tur-tracking-tight);
+  line-height: var(--tur-line-height-tight);
+}
+
+/* ──── Caret ────────────────────────────────────────────────────────────── */
+
+[data-turing-theme='instrument'] [data-turing='cursor'] {
+  display: inline-block;
+  width: 0.5em;
+  height: 1.05em;
+  background: var(--tur-color-accent);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: tur-caret 1s steps(1) infinite;
+}
+
+/* ──── Copy control ─────────────────────────────────────────────────────── */
+
+[data-turing-theme='instrument'] [data-turing='copy-btn'] {
+  opacity: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--tur-color-text-muted);
+  border-radius: var(--tur-radius-xs);
+  transition:
+    opacity var(--tur-transition-fast),
+    color var(--tur-transition-fast),
+    border-color var(--tur-transition-fast);
+}
+
+[data-turing-theme='instrument'] [data-turing='message']:hover [data-turing='copy-btn'],
+[data-turing-theme='instrument'] [data-turing='copy-btn']:focus-visible {
+  opacity: 1;
+}
+
+[data-turing-theme='instrument'] [data-turing='copy-btn']:hover {
+  color: var(--tur-color-accent);
+  border-color: var(--tur-color-border-strong);
+}
+
+/* ============================================================================
+ * Code — a printed listing
+ * ========================================================================== */
+
+[data-turing-theme='instrument'] [data-turing='code-block'] {
+  background: var(--tur-code-bg);
+  border: 1px solid var(--tur-color-border);
+  border-radius: var(--tur-radius-sm);
+  overflow: hidden;
+}
+
+[data-turing-theme='instrument'] [data-turing='code-block'] .tac-code-header {
+  background: var(--tur-code-header-bg);
+  border-bottom: 1px solid var(--tur-color-border);
+  color: var(--tur-color-text-muted);
+}
+
+[data-turing-theme='instrument'] .tac-code-language {
+  font-family: var(--tur-font-mono);
+  font-size: var(--tur-font-size-xs);
+  letter-spacing: var(--tur-tracking-label);
+  text-transform: uppercase;
+}
+
+[data-turing-theme='instrument'] [data-turing='copy-code-btn'] {
+  border-radius: var(--tur-radius-xs);
+  padding: 3px 6px;
+  transition: color var(--tur-transition-fast), background var(--tur-transition-fast);
+}
+
+[data-turing-theme='instrument'] [data-turing='copy-code-btn']:hover {
+  color: var(--tur-color-accent);
+  background: var(--tur-color-accent-subtle);
+}
+
+/* ============================================================================
+ * Input
+ * ========================================================================== */
+
+[data-turing-theme='instrument'] [data-turing='input-bar'] {
+  background: var(--tur-input-bg);
+  border: 1px solid var(--tur-input-border);
+  border-radius: var(--tur-radius-sm);
+  transition: border-color var(--tur-transition-fast), box-shadow var(--tur-transition-fast);
+}
+
+[data-turing-theme='instrument'] [data-turing='input-bar']:focus-within {
+  border-color: var(--tur-color-accent);
+  box-shadow: var(--tur-ring-accent);
+}
+
+[data-turing-theme='instrument'] [data-turing='send-btn'] {
+  background: var(--tur-color-accent);
+  color: var(--tur-color-accent-text);
+  border-radius: var(--tur-radius-sm);
+  transition: background var(--tur-transition-fast);
+}
+
+[data-turing-theme='instrument'] [data-turing='send-btn']:hover:not(:disabled) {
+  background: var(--tur-color-accent-hover);
+}
+
+[data-turing-theme='instrument'] [data-turing='send-btn']:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+[data-turing-theme='instrument'] [data-turing='stop-btn'] {
+  background: transparent;
+  color: var(--tur-color-error);
+  border: 1px solid var(--tur-color-error);
+  border-radius: var(--tur-radius-sm);
+}
+
+[data-turing-theme='instrument'] [data-turing='stop-btn']:hover {
+  background: var(--tur-color-error-subtle);
+}
+
+/* ============================================================================
+ * Status
+ * ========================================================================== */
+
+[data-turing-theme='instrument'] [data-turing='status'][data-status='connected'] {
+  color: var(--tur-color-success);
+}
+[data-turing-theme='instrument'] [data-turing='status'][data-status='connecting'] {
+  color: var(--tur-color-warning);
+  animation: tur-breathe 1.5s ease-in-out infinite;
+}
+[data-turing-theme='instrument'] [data-turing='status'][data-status='disconnected'],
+[data-turing-theme='instrument'] [data-turing='status'][data-status='error'] {
+  color: var(--tur-color-error);
+}
+
+/* ============================================================================
+ * Threads — an index, set like a contents page
+ * ========================================================================== */
+
+[data-turing-theme='instrument'] [data-turing='thread-list'] {
+  background: var(--tur-color-bg-secondary);
+  border-right: 1px solid var(--tur-color-border);
+}
+
+[data-turing-theme='instrument'] [data-turing='thread-item'] {
+  border-radius: var(--tur-radius-xs);
+  transition: background var(--tur-transition-fast);
+}
+
+[data-turing-theme='instrument'] [data-turing='thread-item']:hover {
+  background: var(--tur-color-surface-hover);
+}
+
+[data-turing-theme='instrument'] [data-turing='thread-item'][data-active='true'] {
+  background: var(--tur-color-accent-subtle);
+  box-shadow: inset 2px 0 0 var(--tur-color-accent);
+}
+
+/* ============================================================================
+ * Selects
+ * ========================================================================== */
+
+[data-turing-theme='instrument'] select.tac-custom-select,
+[data-turing-theme='instrument'] select.tac-preset-select {
+  background-color: var(--tur-color-surface);
+  border: 1px solid var(--tur-color-border-strong);
+  color: var(--tur-color-text-secondary);
+  border-radius: var(--tur-radius-xs);
+  font-family: var(--tur-font-mono);
+  transition: border-color var(--tur-transition-fast), color var(--tur-transition-fast);
+}
+
+[data-turing-theme='instrument'] select.tac-custom-select:hover,
+[data-turing-theme='instrument'] select.tac-preset-select:hover {
+  border-color: var(--tur-color-text-muted);
+  color: var(--tur-color-text);
+}
+
+[data-turing-theme='instrument'] select.tac-custom-select:focus-visible,
+[data-turing-theme='instrument'] select.tac-preset-select:focus-visible {
+  outline: 2px solid var(--tur-color-accent);
+  outline-offset: 1px;
+}
+
+/* ============================================================================
+ * Empty state
+ * ========================================================================== */
+
+[data-turing-theme='instrument'] .tac-suggestions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0;
+  width: 100%;
+  max-width: 540px;
+  margin-top: var(--tur-space-xl);
+  border: 1px solid var(--tur-color-border);
+  border-radius: var(--tur-radius-sm);
+  overflow: hidden;
+}
+
+/* Cards share hairlines instead of floating apart, like cells in a table. */
+[data-turing-theme='instrument'] .tac-suggestion-card {
+  background: var(--tur-color-surface);
+  border: none;
+  border-right: 1px solid var(--tur-color-border);
+  border-bottom: 1px solid var(--tur-color-border);
+  padding: var(--tur-space-lg);
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: var(--tur-space-xs);
+  font: inherit;
+  transition: background var(--tur-transition-fast);
+}
+
+[data-turing-theme='instrument'] .tac-suggestion-card:hover {
+  background: var(--tur-color-accent-subtle);
+}
+
+[data-turing-theme='instrument'] .tac-suggestion-icon {
+  color: var(--tur-color-accent);
+  display: flex;
+  margin-bottom: var(--tur-space-xs);
+}
+
+[data-turing-theme='instrument'] .tac-suggestion-title {
+  font-family: var(--tur-font-sans);
+  font-size: var(--tur-font-size-sm);
+  font-weight: var(--tur-font-weight-semibold);
+  color: var(--tur-color-text);
+}
+
+[data-turing-theme='instrument'] .tac-suggestion-desc {
+  font-size: var(--tur-font-size-xs);
+  color: var(--tur-color-text-muted);
+  line-height: var(--tur-line-height-base);
+}
+
+/* ============================================================================
+ * Tool console
+ * ========================================================================== */
+
+[data-turing-theme='instrument'] .tac-terminal-console {
+  background: var(--tur-color-bg-secondary);
+  border: 1px solid var(--tur-color-border);
+  border-radius: var(--tur-radius-sm);
+  overflow: hidden;
+}
+
+[data-turing-theme='instrument'] .tac-terminal-header {
+  background: var(--tur-code-header-bg);
+  border-bottom: 1px solid var(--tur-color-border);
+  transition: background var(--tur-transition-fast);
+}
+
+[data-turing-theme='instrument'] .tac-terminal-header:hover {
+  background: var(--tur-color-surface-hover);
+}
+
+[data-turing-theme='instrument'] .tac-terminal-pre {
+  background: var(--tur-code-bg);
+  border: 1px solid var(--tur-color-border);
+  border-radius: var(--tur-radius-xs);
+  color: var(--tur-color-text-secondary);
+  font-size: var(--tur-font-size-xs);
+}
+
+[data-turing-theme='instrument'] .tac-console-spinner {
+  animation: tur-spin 0.7s linear infinite;
+}
+
+/* ============================================================================
+ * Arena — the readout panel
+ * ========================================================================== */
+
+[data-turing-theme='instrument'] [data-turing='arena-column'] {
+  border-right: 1px solid var(--tur-color-border);
+}
+
+[data-turing-theme='instrument'] [data-turing='arena-column']:last-child {
+  border-right: none;
+}
+
+/* The column being generated is marked with a rule along its top edge —
+   visible at a glance, invisible once it stops mattering. */
+[data-turing-theme='instrument'] [data-turing='arena-column'][data-active='true'] {
+  background: var(--tur-color-accent-subtle);
+}
+
+[data-turing-theme='instrument'] [data-turing='arena-column-header'] {
+  background: var(--tur-color-bg-secondary);
+  border-bottom: 1px solid var(--tur-color-border);
+}
+
+[data-turing-theme='instrument']
+  [data-turing='arena-column'][data-active='true']
+  [data-turing='arena-column-header'] {
+  box-shadow: inset 0 2px 0 var(--tur-color-accent);
+}
+
+[data-turing-theme='instrument'] [data-turing='metric'] {
+  background: transparent;
+  border: 1px solid var(--tur-color-border);
+  border-radius: var(--tur-radius-xs);
+}
+
+/* ──── Leaderboard — a results table ────────────────────────────────────── */
+
+/* A heavy rule under the head, hairlines between rows — the way a results
+   table is set in print. */
+[data-turing-theme='instrument'] [data-turing='leaderboard'] th {
+  border-bottom: 2px solid var(--tur-color-text);
+  background: transparent;
+  color: var(--tur-color-text-muted);
+}
+
+[data-turing-theme='instrument'] [data-turing='leaderboard'] td {
+  border-bottom: 1px solid var(--tur-color-border);
+}
+
+[data-turing-theme='instrument'] [data-turing='leaderboard'] tr:last-child td {
+  border-bottom: none;
+}
+
+[data-turing-theme='instrument'] [data-turing='leaderboard-row']:hover td {
+  background: var(--tur-color-surface-hover);
+}
+
+/* The leader is coloured by the component, which alone knows whether any
+   votes have been cast yet — an unrated table has no leader to highlight. */
+
+/* ============================================================================
+ * Tables inside messages
+ * ========================================================================== */
+
+[data-turing-theme='instrument'] [data-turing='bubble'] table {
+  font-family: var(--tur-font-sans);
+}
+
+[data-turing-theme='instrument'] [data-turing='bubble'] th {
+  background: var(--tur-color-bg-secondary);
+}
+
+/* ============================================================================
+ * Error banner
+ * ========================================================================== */
+
+[data-turing-theme='instrument'] [data-turing='error'] {
+  background: var(--tur-color-error-subtle);
+  border-top: 1px solid var(--tur-color-error);
+  color: var(--tur-color-error);
+}

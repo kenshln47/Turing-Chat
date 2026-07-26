@@ -1,126 +1,230 @@
 # Turing Chat
 
-> **Local-First AI Agent UI Library for React & Next.js**
+> **Find out which of your local models is actually best — with your prompts, on your hardware.**
 
-Turing Chat is a premium, developer-first React component library designed to connect local AI models (like Ollama and LM Studio) directly to your web application. It features a stunning Midnight Violet hacker-themed chat console, side-by-side model comparison, dynamic agent presets, and an interactive developer terminal for client-executable function calling.
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![Tests](https://img.shields.io/badge/tests-229%20passing-brightgreen.svg)](#development)
+[![Status](https://img.shields.io/badge/status-alpha-orange.svg)](#project-status)
 
----
+You have eight models pulled in Ollama. Which one should you use for code? Which is fastest on
+your GPU? Public benchmarks can't tell you — they didn't test your prompts or your machine.
 
-## Key Features
+Turing Chat is a React library that answers the question directly. Send one prompt to every local
+model at once, watch them answer side by side with real timings, and pick a winner **without
+seeing which model wrote which answer**. Your judgements build a persistent Elo leaderboard, and
+saved prompt suites let you re-run the whole comparison after you swap a model or change
+quantisation.
 
-* **Vigilante Aesthetics** — Sleek midnight-slate interface with neon accents, dynamic pulsing radar animations, and interactive action card suggestions.
-* **Human-In-The-Loop Tool Calling** — Collapsible console terminal nested in message bubbles to inspect arguments, execute local functions, and stream results back automatically.
-* **Multi-Model Compare Mode** — Split-screen view to stream and test completions side-by-side with independent model selectors and stream abort controllers.
-* **Dynamic Agent Presets** — Swappable personas (Operative, Coder, Analyst) that change agent system instructions, temperatures, and layouts on the fly.
-* **Local-First & Secure** — Runs entirely on the client or proxied through a rate-limited Next.js route, keeping data secure and private.
-* **Persistent Memory** — IndexedDB and InMemory engines to persist and search conversation histories.
+It ships a complete chat UI too — the arena is built on it.
 
----
-
-## Monorepo Workspace Structure
-
-The project is structured as a pnpm monorepo managed by Turborepo, separating core logic, React bindings, server integrations, and playground examples:
-
-```
-turing-chat/
-├── packages/
-│   ├── core/           # Framework-agnostic AI agent engine
-│   │   └── src/
-│   │       ├── presets/    # Built-in agent presets (Turing, Coder, Analyst)
-│   │       ├── providers/  # Provider interfaces (Ollama, LM Studio)
-│   │       ├── memory/     # Memory persistence engines (IndexedDB, InMemory)
-│   │       └── tools/      # Tool registries and types
-│   ├── react/          # React hooks & themed components
-│   │   └── src/
-│   │       ├── components/ # TuringChat, MessageBubble, InputBar, StatusIndicator, ThreadList
-│   │       ├── context/    # TuringProvider context for shared state
-│   │       ├── hooks/      # useTuringAgent, useModelManager, useConversation, useMessageStream
-│   │       └── themes/     # Vigilante (Midnight Violet), Minimal, Corporate CSS theme styles
-│   └── nextjs/         # Next.js server-side route utilities
-│       └── src/
-│           ├── api/        # createTuringHandler Route Handler
-│           ├── middleware/ # validator & rateLimiter middleware
-│           └── providers/  # Ollama server-side providers
-├── examples/
-│   └── nextjs-chat/    # Next.js & React 19 Playground Chat application
-├── package.json        # Workspace package scripts
-├── pnpm-workspace.yaml # Monorepo workspace configurations
-└── turbo.json          # Monorepo build pipeline configurations
-```
-
-### Package Overview
-
-| Package | Description |
-|:---|:---|
-| [`@turing-chat/core`](./packages/core) | Framework-agnostic engine (Ollama/LM Studio provider implementations, stream parsers, memory persistence, presets). |
-| [`@turing-chat/react`](./packages/react) | React hook integrations (`useTuringAgent`, `useModelManager`) and high-fidelity chat component layouts. |
-| [`@turing-chat/nextjs`](./packages/nextjs) | Next.js API handlers (`createTuringHandler`), validator middlewares, and request rate-limiters. |
-| [`examples/nextjs-chat`](./examples/nextjs-chat) | Reference playground chat application utilizing the package stack. |
+<!-- TODO: add a screenshot of the arena mid-comparison, and one of the leaderboard.
+     Put the files in docs/ and reference them here:
+     ![The arena](docs/arena.png)
+-->
 
 ---
 
-## Quick Start
+## What it does
 
-### 1. Install Dependencies
+- **N-way comparison.** One prompt runs through every model you select, one at a time so they
+  never compete for the same GPU while being measured.
+- **Blind judging.** Answers appear under shuffled labels; names are revealed only after you vote.
+- **Real timings.** Time-to-first-token, decode throughput, and total duration for every response.
+- **Persistent standings.** Each pick becomes a pairwise vote feeding an Elo table that survives
+  a reload.
+- **Prompt suites.** Save the prompts you care about and re-run them after any change — regression
+  testing for models.
+- **Fully local.** Everything runs in the browser against your own server. No account, no upload,
+  no backend.
+
+---
+
+## Project status
+
+**Alpha, and not yet on npm.** The API still moves between versions. Use it from source:
+
 ```bash
-npm install @turing-chat/react @turing-chat/core
+git clone https://github.com/kenshln47/Turing-Chat.git
+cd Turing-Chat
+pnpm install
+pnpm build
+pnpm --filter nextjs-chat dev   # http://localhost:3000
 ```
 
-### 2. Drop-in Chat Component
-Create a chat interface with presets, custom branding, and type safety in a single line of code:
+The demo runs on a simulated provider by default, so it works with nothing installed.
+
+To use the packages in your own app before they are published, reference them from the workspace
+(`"@turing-chat/react": "workspace:*"` in a pnpm monorepo) or `pnpm link` the built package.
+
+---
+
+## Usage
+
+### The arena
 
 ```tsx
-import { TuringChat } from "@turing-chat/react";
-import "@turing-chat/react/dist/themes/vigilante.css";
+import { ModelArena } from "@turing-chat/react";
+import "@turing-chat/react/themes/instrument.css";
 
-export default function ChatPage() {
-  return (
-    <TuringChat 
-      model="llama3.2" 
-      theme="vigilante"
-      title="Turing Chat"
-      showModelSelector={true}
-      showThreadList={true}
-    />
-  );
+export default function Page() {
+  return <ModelArena baseUrl="http://localhost:11434" />;
 }
 ```
 
-### 3. Registering Client-Executable Tools
-You can easily register functions (tools) that the agent can execute on the user's machine after verification:
+Models are discovered from your local server automatically. Ask a question, get every model's
+answer side by side, pick the best one.
+
+**No local models installed?** Use the built-in mock provider — three simulated models with
+different speeds and answer styles, no downloads:
 
 ```tsx
-import { TuringChat, type ExecutableTool } from "@turing-chat/react";
+import { ModelArena } from "@turing-chat/react";
+import { mockProvider } from "@turing-chat/core";
 
-const customTools: Record<string, ExecutableTool> = {
-  calculator: {
-    name: "calculator",
-    description: "Perform arithmetic calculations.",
-    parameters: {
-      type: "object",
-      properties: {
-        operation: { type: "string", enum: ["add", "multiply"] },
-        a: { type: "number" },
-        b: { type: "number" }
-      },
-      required: ["operation", "a", "b"]
-    },
-    execute: async ({ operation, a, b }) => {
-      return operation === "add" ? a + b : a * b;
-    }
-  }
-};
+<ModelArena provider={mockProvider()} />
+```
 
-// Pass customTools to the chat component
-<TuringChat tools={customTools} />
+### The chat
+
+```tsx
+import { TuringChat } from "@turing-chat/react";
+import "@turing-chat/react/themes/instrument.css";
+
+export default function ChatPage() {
+  return <TuringChat model="llama3.2" showThreadList showModelSelector />;
+}
+```
+
+Conversations persist to IndexedDB by default and are restored on reload.
+
+---
+
+## What gets measured
+
+Every response is timed client-side so the numbers stay comparable across providers:
+
+| Metric | Meaning |
+|---|---|
+| **TTFT** | Time to first token — how long before the model started answering |
+| **Speed** | Decode throughput in tokens/sec, *excluding* the wait for the first token |
+| **Total** | Wall-clock time for the whole response |
+| **Tokens** | Completion tokens, as reported by the provider |
+
+Two deliberate choices keep these numbers honest:
+
+**Models run one at a time by default.** Local models share one GPU. Running them concurrently
+makes them compete for memory bandwidth and inflates every measurement. Pass `concurrency={n}` if
+you'd rather finish quickly than measure accurately.
+
+**Standings report medians, not means.** The first request after a model is swapped into VRAM is
+dramatically slower than steady state, and a single cold load would dominate an average.
+
+---
+
+## Blind judging
+
+Model names are hidden until you vote, and the columns are shuffled so position doesn't leak
+identity either. Knowing an answer came from the 14B model is enough to bias the judgement it's
+supposed to receive.
+
+A single pick expands into one pairwise vote against each other model, which is what Elo consumes.
+Votes are replayed in chronological order, so standings are identical no matter what order runs
+are loaded in.
+
+---
+
+## Prompt suites — regression testing for models
+
+Save the prompts you actually care about, then re-run them whenever something changes:
+
+```ts
+import { createSuite, runSuite, ollamaProvider } from "@turing-chat/core";
+
+const suite = createSuite("My work", [
+  { name: "Refactor", prompt: "Simplify this reducer: …" },
+  { name: "SQL", prompt: "Write a query that finds duplicate emails." },
+]);
+
+const runs = await runSuite({
+  provider: ollamaProvider(),
+  suite,
+  models: ["llama3.2", "qwen2.5-coder", "phi4"],
+});
+```
+
+`createStarterSuite()` gives you five prompts covering instruction-following, code generation,
+reasoning, summarisation, and hallucination resistance.
+
+Export results as Markdown, CSV, or a JSON backup:
+
+```ts
+import { toMarkdownReport, toLeaderboardCsv, computeLeaderboard } from "@turing-chat/core";
+
+const report = toMarkdownReport(runs);
+const csv = toLeaderboardCsv(computeLeaderboard(runs));
 ```
 
 ---
 
-## Architecture Guide & Diagrams
+## Packages
 
-For an in-depth breakdown of package relationships, stream processing loops, and sequence diagrams for tool execution, please refer to the [System Architecture Guide](./architecture_guide.md).
+| Package | Contents |
+|:---|:---|
+| [`@turing-chat/core`](./packages/core) | Providers (Ollama, LM Studio, mock), streaming parsers, metrics, the eval engine, memory backends, presets |
+| [`@turing-chat/react`](./packages/react) | `ModelArena`, `TuringChat`, `Leaderboard`, and the hooks behind them |
+| [`@turing-chat/nextjs`](./packages/nextjs) | Route handlers, request validation, rate limiting |
+| [`examples/nextjs-chat`](./examples/nextjs-chat) | Deployable demo site: landing page, arena (`/arena`), chat (`/chat`) |
+
+### Hooks
+
+```ts
+const arena = useArena({ models: ["llama3.2", "phi4"] });
+await arena.start("Explain closures.");
+await arena.vote(arena.run!.entries[0].id);
+arena.standings; // ranked, persisted
+```
+
+`useTuringAgent`, `useConversation`, `useModelManager`, and `useArena` are all usable on their own
+if you'd rather build your own UI.
+
+---
+
+## Chat features
+
+- **Markdown with GFM** — tables, strikethrough, task lists, autolinks
+- **Syntax highlighting** across 20+ languages, with per-block copy buttons
+- **Human-in-the-loop tool calling** — inspect arguments, approve or decline, results stream back
+- **Agent presets** — swappable personas with their own prompts and temperatures
+- **Persistent threads** — IndexedDB by default, auto-titled from your first message
+- **Three themes** — Instrument (paper & ink), Minimal, Corporate
+
+---
+
+## Development
+
+```bash
+pnpm install     # Node 18+, pnpm 9
+pnpm build       # build all packages
+pnpm test        # 229 tests across core and react
+pnpm typecheck
+pnpm --filter nextjs-chat dev
+```
+
+The demo site runs on the simulated provider by default, so it works with nothing installed.
+
+### Known gaps
+
+Honest list of what is not done yet:
+
+- `@turing-chat/nextjs` has no test coverage.
+- Prompt suites work through the API but have no UI yet — `runSuite()` is code-only.
+- No CI workflow.
+
+## Architecture
+
+See the [System Architecture Guide](./architecture_guide.md) for package relationships, stream
+processing, and tool-execution sequence diagrams.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
+MIT — see [LICENSE](./LICENSE).

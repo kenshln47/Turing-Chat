@@ -1,27 +1,489 @@
-@import "tailwindcss";
-@import "@turing-chat/react/themes/vigilante.css";
+/* ============================================================================
+ * Site styles
+ *
+ * The library's theme is applied to <html> (see layout.tsx), so the whole site
+ * — not just the embedded components — draws from the same tokens. Change the
+ * theme and the marketing pages change with it.
+ *
+ * The theme stylesheet is imported from layout.tsx rather than with an
+ * `@import` here: bundlers resolve a JS import against the package's exports
+ * map reliably, while CSS `@import` of a package path depends on whichever
+ * PostCSS resolver happens to be configured.
+ * ========================================================================== */
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  background: var(--tur-color-bg);
+  color: var(--tur-color-text);
+  font-family: var(--tur-font-sans);
+  font-size: var(--tur-font-size-base);
+  line-height: var(--tur-line-height-base);
+}
+
+a {
+  color: inherit;
+}
+
+::selection {
+  background: var(--tur-color-accent);
+  color: var(--tur-color-accent-text);
+}
+
+/* ──── Layout ───────────────────────────────────────────────────────────── */
+
+.wrap {
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ──── Site header ──────────────────────────────────────────────────────── */
+
+.site-header {
+  border-bottom: 1px solid var(--tur-color-border);
+  background: var(--tur-color-bg);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  height: 60px;
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  text-decoration: none;
+  font-family: var(--tur-font-serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: var(--tur-tracking-tight);
+  color: var(--tur-color-text);
+  white-space: nowrap;
+}
+
+.wordmark__mark {
+  color: var(--tur-color-accent);
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.site-nav a {
+  padding: 6px 10px;
+  border-radius: var(--tur-radius-xs);
+  font-size: var(--tur-font-size-sm);
+  color: var(--tur-color-text-secondary);
+  text-decoration: none;
+  transition: background var(--tur-transition-fast), color var(--tur-transition-fast);
+}
+
+.site-nav a:hover {
+  background: var(--tur-color-surface-hover);
+  color: var(--tur-color-text);
+}
+
+.site-nav a[aria-current="page"] {
+  color: var(--tur-color-accent);
+  font-weight: 600;
+}
+
+/* ──── Scheme toggle ────────────────────────────────────────────────────── */
+
+.scheme-toggle {
+  display: inline-flex;
+  margin-left: 8px;
+  border: 1px solid var(--tur-color-border);
+  border-radius: var(--tur-radius-xs);
+  overflow: hidden;
+}
+
+.scheme-toggle button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--tur-color-text-muted);
+  cursor: pointer;
+  transition: background var(--tur-transition-fast), color var(--tur-transition-fast);
+}
+
+.scheme-toggle button + button {
+  border-left: 1px solid var(--tur-color-border);
+}
+
+.scheme-toggle button:hover {
+  background: var(--tur-color-surface-hover);
+  color: var(--tur-color-text);
+}
+
+.scheme-toggle button[aria-pressed="true"] {
+  background: var(--tur-color-accent);
+  color: var(--tur-color-accent-text);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ──── Hero ─────────────────────────────────────────────────────────────── */
+
+.hero {
+  padding: 72px 0 56px;
+  border-bottom: 1px solid var(--tur-color-border);
+}
+
+.eyebrow {
+  font-family: var(--tur-font-mono);
+  font-size: var(--tur-font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tur-tracking-label);
+  color: var(--tur-color-accent);
+  margin: 0 0 18px;
+}
+
+.hero h1 {
+  font-family: var(--tur-font-serif);
+  font-size: clamp(2rem, 5.5vw, 3.4rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+  margin: 0 0 20px;
+  max-width: 17ch;
+}
+
+.hero h1 em {
+  font-style: italic;
+  color: var(--tur-color-accent);
+}
+
+.lede {
+  font-family: var(--tur-font-serif);
+  font-size: clamp(1.05rem, 2.2vw, 1.25rem);
+  line-height: 1.65;
+  color: var(--tur-color-text-secondary);
+  margin: 0 0 32px;
+  max-width: 58ch;
+}
+
+.cta-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: var(--tur-radius-sm);
+  border: 1px solid transparent;
+  font-family: var(--tur-font-sans);
+  font-size: var(--tur-font-size-sm);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--tur-transition-fast), border-color var(--tur-transition-fast);
+}
+
+.btn--primary {
+  background: var(--tur-color-accent);
+  color: var(--tur-color-accent-text);
+  border-color: var(--tur-color-accent);
+}
+
+.btn--primary:hover {
+  background: var(--tur-color-accent-hover);
+  border-color: var(--tur-color-accent-hover);
+}
+
+.btn--ghost {
+  border-color: var(--tur-color-border-strong);
+  color: var(--tur-color-text);
+}
+
+.btn--ghost:hover {
+  background: var(--tur-color-surface-hover);
+  border-color: var(--tur-color-text-muted);
+}
+
+/* ──── Sections ─────────────────────────────────────────────────────────── */
+
+.section {
+  padding: 56px 0;
+  border-bottom: 1px solid var(--tur-color-border);
+}
+
+.section__label {
+  font-family: var(--tur-font-mono);
+  font-size: var(--tur-font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tur-tracking-label);
+  color: var(--tur-color-text-muted);
+  margin: 0 0 24px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--tur-color-border);
+}
+
+.section h2 {
+  font-family: var(--tur-font-serif);
+  font-size: clamp(1.4rem, 3vw, 1.9rem);
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  font-weight: 600;
+  margin: 0 0 14px;
+}
+
+.section p {
+  color: var(--tur-color-text-secondary);
+  max-width: 62ch;
+  margin: 0 0 14px;
+}
+
+/* ──── Steps ────────────────────────────────────────────────────────────── */
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 0;
+  border: 1px solid var(--tur-color-border);
+  border-radius: var(--tur-radius-sm);
+  overflow: hidden;
+}
+
+.step {
+  padding: 22px;
+  border-right: 1px solid var(--tur-color-border);
+  background: var(--tur-color-surface);
+}
+
+.step:last-child {
+  border-right: none;
+}
+
+.step__n {
+  font-family: var(--tur-font-mono);
+  font-size: var(--tur-font-size-xs);
+  color: var(--tur-color-accent);
+  letter-spacing: var(--tur-tracking-label);
+  display: block;
+  margin-bottom: 10px;
+}
+
+.step h3 {
+  font-family: var(--tur-font-sans);
+  font-size: var(--tur-font-size-base);
+  font-weight: 600;
+  margin: 0 0 6px;
+}
+
+.step p {
+  font-size: var(--tur-font-size-sm);
+  color: var(--tur-color-text-muted);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ──── Spec table ───────────────────────────────────────────────────────── */
+
+.spec {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--tur-font-size-sm);
+}
+
+.spec th {
+  text-align: left;
+  font-family: var(--tur-font-mono);
+  font-size: var(--tur-font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tur-tracking-label);
+  color: var(--tur-color-text-muted);
+  font-weight: 500;
+  padding: 8px 12px 8px 0;
+  border-bottom: 2px solid var(--tur-color-text);
+  white-space: nowrap;
+}
+
+.spec td {
+  padding: 12px 12px 12px 0;
+  border-bottom: 1px solid var(--tur-color-border);
+  vertical-align: top;
+  color: var(--tur-color-text-secondary);
+}
+
+.spec td:first-child {
+  font-family: var(--tur-font-mono);
+  color: var(--tur-color-text);
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.spec tr:last-child td {
+  border-bottom: none;
+}
+
+.spec-scroll {
+  overflow-x: auto;
+}
+
+/* ──── Code sample ──────────────────────────────────────────────────────── */
+
+.snippet {
+  background: var(--tur-code-bg);
+  border: 1px solid var(--tur-color-border);
+  border-radius: var(--tur-radius-sm);
+  padding: 16px 18px;
+  overflow-x: auto;
+  font-family: var(--tur-font-mono);
+  font-size: var(--tur-font-size-sm);
+  line-height: 1.7;
+  color: var(--tur-color-text);
+  margin: 0;
+}
+
+.snippet .c {
+  color: var(--tur-color-text-muted);
+}
+
+.snippet .k {
+  color: var(--tur-color-accent);
+}
+
+/* ──── Demo page frame ──────────────────────────────────────────────────── */
+
+.demo {
+  padding: 24px 0 40px;
+}
+
+.demo__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.demo__head h1 {
+  font-family: var(--tur-font-serif);
+  font-size: clamp(1.4rem, 3vw, 1.9rem);
+  letter-spacing: -0.015em;
+  font-weight: 600;
+  margin: 0 0 6px;
+}
+
+.demo__head p {
+  margin: 0;
+  color: var(--tur-color-text-muted);
+  font-size: var(--tur-font-size-sm);
+  max-width: 62ch;
+}
+
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--tur-font-size-sm);
+  color: var(--tur-color-text-secondary);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.switch input {
+  accent-color: var(--tur-color-accent);
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+
+/* ──── Footer ───────────────────────────────────────────────────────────── */
+
+.site-footer {
+  padding: 32px 0 48px;
+  color: var(--tur-color-text-muted);
+  font-size: var(--tur-font-size-sm);
+}
+
+.site-footer__inner {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.site-footer a {
+  color: var(--tur-color-text-secondary);
+  text-decoration: none;
+}
+
+.site-footer a:hover {
+  color: var(--tur-color-accent);
+}
+
+/* ──── Small screens ────────────────────────────────────────────────────── */
+
+@media (max-width: 720px) {
+  .wrap {
+    padding: 0 18px;
+  }
+
+  .hero {
+    padding: 48px 0 40px;
+  }
+
+  .site-header__inner {
+    height: auto;
+    padding: 12px 0;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .step {
+    border-right: none;
+    border-bottom: 1px solid var(--tur-color-border);
+  }
+
+  .step:last-child {
+    border-bottom: none;
+  }
 }

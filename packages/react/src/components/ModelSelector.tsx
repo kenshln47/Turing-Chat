@@ -21,6 +21,7 @@ import {
   type ChangeEvent,
 } from 'react';
 import type { ModelInfo } from '../types/core';
+import { WarningIcon } from './icons';
 
 // ────────────────────────────────────────────────────────────────────────────
 // Props
@@ -167,8 +168,12 @@ export const ModelSelector = memo(function ModelSelector({
       aria-label="Model selector"
     >
       {error ? (
-        <span style={errorStyle} title={error.message}>
-          ⚠ {error.message || 'Connection error'}
+        <span
+          style={{ ...errorStyle, display: 'inline-flex', alignItems: 'center', gap: 4 }}
+          title={error.message}
+        >
+          <WarningIcon size={13} style={{ flexShrink: 0 }} />
+          {error.message || 'Connection error'}
         </span>
       ) : isLoading ? (
         <span style={loadingStyle}>Loading models…</span>
