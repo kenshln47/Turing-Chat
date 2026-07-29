@@ -4,7 +4,7 @@
 
 [![Live demo](https://img.shields.io/badge/demo-turing--chat--gold.vercel.app-BF3B12.svg)](https://turing-chat-gold.vercel.app)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
-[![Tests](https://img.shields.io/badge/tests-229%20passing-brightgreen.svg)](#development)
+[![CI](https://github.com/kenshln47/Turing-Chat/actions/workflows/ci.yml/badge.svg)](https://github.com/kenshln47/Turing-Chat/actions/workflows/ci.yml)
 [![Status](https://img.shields.io/badge/status-alpha-orange.svg)](#project-status)
 
 **→ [Try the live demo](https://turing-chat-gold.vercel.app/arena)** — runs on simulated models,
@@ -225,11 +225,10 @@ Honest list of what is not done yet:
 
 - `@turing-chat/nextjs` has no test coverage.
 - Prompt suites work through the API but have no UI yet — `runSuite()` is code-only.
-- No CI workflow.
 
 ## Architecture
 
-See the [System Architecture Guide](./architecture_guide.md) for package relationships, stream
+See the [System Architecture Guide](./docs/architecture.md) for package relationships, stream
 processing, and tool-execution sequence diagrams.
 
 ## License

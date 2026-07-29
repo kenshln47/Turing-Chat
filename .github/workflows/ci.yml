@@ -1,0 +1,55 @@
+name: Verify Turing Chat
+
+permissions:
+  contents: read
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build all packages
+        run: pnpm build
+
+      - name: Run unit tests
+        run: pnpm test
+
+      # The published packages are consumed as source-built artifacts, so a
+      # missing dist/ breaks every downstream install without failing a test.
+      - name: Verify build output exists
+        run: |
+          for pkg in core react nextjs; do
+            if [ ! -d "packages/$pkg/dist" ]; then
+              echo "packages/$pkg/dist is missing after build"
+              exit 1
+            fi
+            if [ -z "$(ls -A "packages/$pkg/dist")" ]; then
+              echo "packages/$pkg/dist built empty"
+              exit 1
+            fi
+          done
+          echo "All three packages produced build output."

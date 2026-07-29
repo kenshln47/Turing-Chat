@@ -1,6 +1,6 @@
-# Turing AI Architecture & Technical Documentation
+# Turing Chat Architecture & Technical Documentation
 
-This document describes the architectural layout, components, and data-flow sequences of the `@turing-ai` monorepo. It serves as the primary system design reference for building, extending, and utilizing the local-first React component library.
+This document describes the architectural layout, components, and data-flow sequences of the `@turing-chat` monorepo. It serves as the primary system design reference for building, extending, and utilizing the local-first React component library.
 
 ---
 
@@ -11,10 +11,10 @@ The codebase is organized as a Turborepo monorepo with three core packages and a
 ```mermaid
 graph TD
     %% Packages
-    subgraph Monorepo ["Turing AI Monorepo"]
-        core["@turing-ai/core<br>(Core Engine)"]
-        nextjs["@turing-ai/nextjs<br>(Server Utilities)"]
-        react["@turing-ai/react<br>(Hooks & UI Components)"]
+    subgraph Monorepo ["Turing Chat Monorepo"]
+        core["@turing-chat/core<br>(Core Engine)"]
+        nextjs["@turing-chat/nextjs<br>(Server Utilities)"]
+        react["@turing-chat/react<br>(Hooks & UI Components)"]
         example["examples/nextjs-chat<br>(Next.js Playground App)"]
     end
 
@@ -35,9 +35,9 @@ graph TD
 ```
 
 ### Monorepo Packages Breakdown
-1. **`@turing-ai/core`**: Framework-agnostic typescript package. Contains providers (`ollamaProvider`, `lmStudioProvider`), conversation memory layer (`IndexedDB`, `InMemory`), stream parsing helpers (`parseNDJSON`), and model preset definitions.
-2. **`@turing-ai/react`**: React package exporting hooks (`useTuringAgent`, `useModelManager`, `useConversation`) and components (`TuringChat`, `MessageBubble`, `InputBar`, `ModelSelector`, `ThreadList`). Integrates CSS themes like `instrument.css`.
-3. **`@turing-ai/nextjs`**: Next.js proxy route handler (`createTuringHandler`) allowing requests to go through a secure, rate-limited backend instead of connecting directly from the client.
+1. **`@turing-chat/core`**: Framework-agnostic typescript package. Contains providers (`ollamaProvider`, `lmStudioProvider`), conversation memory layer (`IndexedDB`, `InMemory`), stream parsing helpers (`parseNDJSON`), and model preset definitions.
+2. **`@turing-chat/react`**: React package exporting hooks (`useTuringAgent`, `useModelManager`, `useConversation`) and components (`TuringChat`, `MessageBubble`, `InputBar`, `ModelSelector`, `ThreadList`). Integrates CSS themes like `instrument.css`.
+3. **`@turing-chat/nextjs`**: Next.js proxy route handler (`createTuringHandler`) allowing requests to go through a secure, rate-limited backend instead of connecting directly from the client.
 
 ---
 
